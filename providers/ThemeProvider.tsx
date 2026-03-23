@@ -40,22 +40,27 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 function applyTheme(t: Tenant) {
   const root = document.documentElement;
+  
   if (t.primary_color) {
-    // Convert hex to HSL for shadcn/ui compatibility
     const { h, s, l } = hexToHsl(t.primary_color);
-    root.style.setProperty('--primary', `${h} ${s}% ${l}%`);
-    root.style.setProperty('--primary-foreground', l > 50 ? '222 47% 11%' : '0 0% 100%');
-    root.style.setProperty('--clinic-primary', t.primary_color);
+    root.style.setProperty('--primary', `hsl(${h} ${s}% ${l}%)`);
+    // Ensure primary-foreground is legible
+    root.style.setProperty('--primary-foreground', l > 65 ? 'hsl(222.2 47.4% 11.2%)' : 'hsl(0 0% 100%)');
+    root.style.setProperty('--ring', `hsl(${h} ${s}% ${l}%)`);
   }
+
   if (t.secondary_color) {
     const { h, s, l } = hexToHsl(t.secondary_color);
-    root.style.setProperty('--secondary', `${h} ${s}% ${l}%`);
-    root.style.setProperty('--clinic-secondary', t.secondary_color);
+    root.style.setProperty('--secondary', `hsl(${h} ${s}% ${l}%)`);
+    root.style.setProperty('--secondary-foreground', l > 65 ? 'hsl(222.2 47.4% 11.2%)' : 'hsl(0 0% 100%)');
   }
-  if (t.border_radius) root.style.setProperty('--radius', t.border_radius);
+
+  if (t.border_radius) {
+    root.style.setProperty('--radius', t.border_radius);
+  }
+
   if (t.font_family) {
     root.style.setProperty('--font-sans', `"${t.font_family}", system-ui, sans-serif`);
-    // Load font from Google Fonts
     const link = document.createElement('link');
     link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(t.font_family)}:wght@400;500;600;700&display=swap`;
     link.rel = 'stylesheet';
@@ -64,10 +69,7 @@ function applyTheme(t: Tenant) {
 }
 
 function applyDefaultTheme() {
-  const root = document.documentElement;
-  root.style.setProperty('--primary', '221 83% 53%');
-  root.style.setProperty('--primary-foreground', '0 0% 100%');
-  root.style.setProperty('--radius', '0.5rem');
+  // Let globals.css handle defaults
 }
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } {

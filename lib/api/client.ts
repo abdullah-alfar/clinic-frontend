@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '@/hooks/useAuthStore';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
 
@@ -17,17 +18,13 @@ function processQueue(error: unknown, token: string | null) {
 
 // Inject access token on every request
 apiClient.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = localStorage.getItem('clinic-auth');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const token = parsed?.state?.accessToken;
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      }
-    } catch {}
+  const { accessToken } = useAuthStore.getState();
+  if (accessToken && config.headers) {
+    if (typeof config.headers.set === 'function') {
+      config.headers.set('Authorization', `Bearer ${accessToken}`);
+    } else {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
   }
   return config;
 });
@@ -37,47 +34,64 @@ apiClient.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
+    
+    // If it's a 401 and not already a retry
     if (error.response?.status === 401 && !original._retry) {
       if (isRefreshing) {
         return new Promise<string>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then((token) => {
-          original.headers.Authorization = `Bearer ${token}`;
-          return axios(original);
-        });
+        })
+          .then((token) => {
+            if (original.headers && typeof original.headers.set === 'function') {
+              original.headers.set('Authorization', `Bearer ${token}`);
+            } else if (original.headers) {
+              original.headers.Authorization = `Bearer ${token}`;
+            }
+            return apiClient.request(original);
+          })
+          .catch((err) => Promise.reject(err));
       }
+
       original._retry = true;
       isRefreshing = true;
-      try {
-        const stored = localStorage.getItem('clinic-auth');
-        const refreshToken = stored ? JSON.parse(stored)?.state?.refreshToken : null;
-        if (!refreshToken) throw new Error('No refresh token');
 
-        const { data } = await axios.post(`${API_BASE}/auth/refresh`, { refresh_token: refreshToken });
-        const newAccess = data.data.access_token;
-        const newRefresh = data.data.refresh_token;
+      const { refreshToken, setTokens, logout } = useAuthStore.getState();
 
-        // Update zustand persisted store
-        const current = JSON.parse(localStorage.getItem('clinic-auth') || '{}');
-        if (current?.state) {
-          current.state.accessToken = newAccess;
-          current.state.refreshToken = newRefresh;
-          localStorage.setItem('clinic-auth', JSON.stringify(current));
+      if (!refreshToken) {
+        logout();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
         }
+        return Promise.reject(error);
+      }
+
+      try {
+        const { data } = await axios.post(`${API_BASE}/auth/refresh`, { refresh_token: refreshToken });
+        const { access_token: newAccess, refresh_token: newRefresh } = data.data;
+
+        setTokens(newAccess, newRefresh);
 
         processQueue(null, newAccess);
-        original.headers.Authorization = `Bearer ${newAccess}`;
-        return axios(original);
+        
+        if (original.headers && typeof original.headers.set === 'function') {
+          original.headers.set('Authorization', `Bearer ${newAccess}`);
+        } else if (original.headers) {
+          original.headers.Authorization = `Bearer ${newAccess}`;
+        }
+
+        return apiClient.request(original);
       } catch (refreshErr) {
         processQueue(refreshErr, null);
-        // Force logout
-        localStorage.removeItem('clinic-auth');
-        window.location.href = '/login';
+        logout();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshErr);
       } finally {
         isRefreshing = false;
       }
     }
+
     return Promise.reject(error);
   }
 );

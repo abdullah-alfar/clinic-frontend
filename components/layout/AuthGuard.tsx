@@ -8,11 +8,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { accessToken, user, setUser, logout } = useAuthStore();
+  const { accessToken, user, setUser, logout, _hasHydrated } = useAuthStore();
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    // Wait until Zustand has hydrated from localStorage
+    if (!_hasHydrated) return;
+
     if (!accessToken) {
+      setChecking(false);
       router.replace('/login');
       return;
     }
@@ -23,16 +27,27 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
 
     // Token exists but no user yet — validate via /me
+    setChecking(true);
     getMe()
       .then((u) => {
         setUser(u);
         setChecking(false);
       })
-      .catch(() => {
-        logout();
-        router.replace('/login');
+      .catch((err) => {
+        // If it's a 403 (Forbidden), the token is valid but the user lacks permissions 
+        // or is disabled. We shouldn't blindly logout if the token is still "good" 
+        // for other things, but for AuthGuard specifically, if /me fails, we can't proceed.
+        if (err.response?.status === 403) {
+          console.error('Access forbidden:', err);
+          // For now, redirect to login as well, but we could show a distinct error page.
+          logout();
+          router.replace('/login?error=forbidden');
+        } else {
+          logout();
+          router.replace('/login');
+        }
       });
-  }, [accessToken, user, router, setUser, logout]);
+  }, [accessToken, user, router, setUser, logout, _hasHydrated]);
 
   if (checking) {
     return (

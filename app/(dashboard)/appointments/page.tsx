@@ -12,7 +12,7 @@ import { useAuthStore } from '@/hooks/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ModalForm } from '@/components/ui/modal-form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -42,17 +42,24 @@ export default function AppointmentsPage() {
   const [open, setOpen] = useState(false);
   const [doctorId, setDoctorId] = useState('');
   const [patientId, setPatientId] = useState('');
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   const { data: appointments, isLoading } = useQuery({ queryKey: ['appointments'], queryFn: () => getAppointments() });
   const { data: doctors } = useQuery({ queryKey: ['doctors'], queryFn: getDoctors });
   const { data: patients } = useQuery({ queryKey: ['patients'], queryFn: getPatients });
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['appointments'] });
+  const invalidate = () => { setStatusError(null); qc.invalidateQueries({ queryKey: ['appointments'] }); };
+  const handleError = (err: any) => {
+    const status = err.response?.status;
+    if (status === 403) setStatusError("You don't have permission to change appointment status.");
+    else if (status === 401) setStatusError("Session expired. Please log in again.");
+    else setStatusError(err.response?.data?.message || "Action failed.");
+  };
 
   const createMut = useMutation({ mutationFn: createAppointment, onSuccess: () => { invalidate(); setOpen(false); reset(); } });
-  const confirmMut = useMutation({ mutationFn: confirmAppointment, onSuccess: invalidate });
-  const cancelMut = useMutation({ mutationFn: cancelAppointment, onSuccess: invalidate });
-  const completeMut = useMutation({ mutationFn: completeAppointment, onSuccess: invalidate });
+  const confirmMut = useMutation({ mutationFn: confirmAppointment, onSuccess: invalidate, onError: handleError });
+  const cancelMut = useMutation({ mutationFn: cancelAppointment, onSuccess: invalidate, onError: handleError });
+  const completeMut = useMutation({ mutationFn: completeAppointment, onSuccess: invalidate, onError: handleError });
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<ApptForm>({ resolver: zodResolver(schema) });
 
@@ -68,59 +75,72 @@ export default function AppointmentsPage() {
           <p className="text-muted-foreground text-sm">Manage and track clinic appointments</p>
         </div>
         {canCreate && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="mr-2 h-4 w-4" />New Appointment</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
-              <DialogHeader><DialogTitle>Schedule Appointment</DialogTitle></DialogHeader>
-              <form onSubmit={handleSubmit((d) => createMut.mutate({ ...d, doctor_id: doctorId, patient_id: patientId }))} className="space-y-4 pt-2">
-                <div className="space-y-1.5">
-                  <Label>Patient *</Label>
-                  <Select onValueChange={(v) => { setPatientId(v); setValue('patient_id', v); }}>
-                    <SelectTrigger><SelectValue placeholder="Select patient" /></SelectTrigger>
-                    <SelectContent>{patients?.map((p) => <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name}</SelectItem>)}</SelectContent>
-                  </Select>
-                  {errors.patient_id && <p className="text-xs text-destructive">{errors.patient_id.message}</p>}
+          <>
+            <Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" />New Appointment</Button>
+            <ModalForm
+              open={open}
+              onOpenChange={setOpen}
+              title="Schedule Appointment"
+              description="Book a new appointment for a patient."
+              onSubmit={handleSubmit((d) => createMut.mutate({ ...d, doctor_id: doctorId, patient_id: patientId }))}
+              submitLabel="Schedule"
+              isPending={createMut.isPending}
+            >
+              <div className="grid gap-2">
+                <Label htmlFor="patient">Patient *</Label>
+                <Select onValueChange={(v) => { setPatientId(v); setValue('patient_id', v); }}>
+                  <SelectTrigger id="patient"><SelectValue placeholder="Select patient" /></SelectTrigger>
+                  <SelectContent>{patients?.map((p) => <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name}</SelectItem>)}</SelectContent>
+                </Select>
+                {errors.patient_id && <p className="text-xs text-destructive">{errors.patient_id.message}</p>}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="doctor">Doctor *</Label>
+                <Select onValueChange={(v) => { setDoctorId(v); setValue('doctor_id', v); }}>
+                  <SelectTrigger id="doctor"><SelectValue placeholder="Select doctor" /></SelectTrigger>
+                  <SelectContent>{doctors?.map((d) => <SelectItem key={d.id} value={d.id}>{d.full_name}</SelectItem>)}</SelectContent>
+                </Select>
+                {errors.doctor_id && <p className="text-xs text-destructive">{errors.doctor_id.message}</p>}
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="start_time">Start Time *</Label>
+                  <Input id="start_time" {...register('start_time')} type="datetime-local" />
+                  {errors.start_time && <p className="text-xs text-destructive">{errors.start_time.message}</p>}
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Doctor *</Label>
-                  <Select onValueChange={(v) => { setDoctorId(v); setValue('doctor_id', v); }}>
-                    <SelectTrigger><SelectValue placeholder="Select doctor" /></SelectTrigger>
-                    <SelectContent>{doctors?.map((d) => <SelectItem key={d.id} value={d.id}>{d.full_name}</SelectItem>)}</SelectContent>
-                  </Select>
-                  {errors.doctor_id && <p className="text-xs text-destructive">{errors.doctor_id.message}</p>}
+                <div className="grid gap-2">
+                  <Label htmlFor="end_time">End Time *</Label>
+                  <Input id="end_time" {...register('end_time')} type="datetime-local" />
+                  {errors.end_time && <p className="text-xs text-destructive">{errors.end_time.message}</p>}
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label>Start Time *</Label>
-                    <Input {...register('start_time')} type="datetime-local" />
-                    {errors.start_time && <p className="text-xs text-destructive">{errors.start_time.message}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>End Time *</Label>
-                    <Input {...register('end_time')} type="datetime-local" />
-                    {errors.end_time && <p className="text-xs text-destructive">{errors.end_time.message}</p>}
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Reason</Label>
-                  <Input {...register('reason')} placeholder="Brief reason for visit" />
-                </div>
-                {createMut.error && (
-                  <p className="text-xs text-destructive">
-                    {(createMut.error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to create appointment.'}
-                  </p>
-                )}
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                  <Button type="submit" disabled={createMut.isPending}>{createMut.isPending ? 'Scheduling...' : 'Schedule'}</Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="reason">Reason</Label>
+                <Input id="reason" {...register('reason')} placeholder="Brief reason for visit" />
+              </div>
+              {createMut.error && (
+                <p className="text-xs text-destructive font-medium bg-destructive/10 p-2 rounded border border-destructive/20">
+                  {(() => {
+                    const err = createMut.error as any;
+                    const status = err.response?.status;
+                    const msg = err.response?.data?.message;
+                    if (status === 401) return 'Session expired. Please log in again.';
+                    if (status === 403) return 'You do not have permission to perform this action.';
+                    return msg || 'Failed to schedule appointment.';
+                  })()}
+                </p>
+              )}
+            </ModalForm>
+          </>
         )}
       </div>
+
+      {statusError && (
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-md mb-4 flex justify-between items-center animate-in fade-in zoom-in duration-200">
+          <span>{statusError}</span>
+          <Button variant="ghost" size="sm" onClick={() => setStatusError(null)} className="h-6 px-2 hover:bg-destructive/20">Dismiss</Button>
+        </div>
+      )}
 
       <div className="rounded-lg border border-border overflow-hidden">
         <Table>

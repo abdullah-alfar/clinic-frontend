@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getNotifications, markNotificationRead } from '@/lib/api/notifications';
 import { Badge } from '@/components/ui/badge';
@@ -17,9 +19,16 @@ export default function NotificationsPage() {
     queryFn: () => getNotifications(100),
   });
 
+  const [notifError, setNotifError] = useState<string | null>(null);
   const markRead = useMutation({
     mutationFn: markNotificationRead,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => { setNotifError(null); qc.invalidateQueries({ queryKey: ['notifications'] }); },
+    onError: (err: any) => {
+      const status = err.response?.status;
+      if (status === 403) setNotifError("Permission denied.");
+      else if (status === 401) setNotifError("Session expired.");
+      else setNotifError("Failed to mark as read.");
+    }
   });
 
   const unread = notifications?.filter((n) => n.status !== 'read').length ?? 0;
@@ -32,6 +41,13 @@ export default function NotificationsPage() {
           <p className="text-muted-foreground text-sm">{unread > 0 ? `${unread} unread notifications` : 'All caught up!'}</p>
         </div>
       </div>
+
+      {notifError && (
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-md mb-4 flex justify-between items-center animate-in fade-in zoom-in duration-200">
+          <span>{notifError}</span>
+          <Button variant="ghost" size="sm" onClick={() => setNotifError(null)} className="h-6 px-2 hover:bg-destructive/20">Dismiss</Button>
+        </div>
+      )}
 
       <div className="rounded-lg border border-border divide-y divide-border overflow-hidden">
         {isLoading && Array.from({ length: 5 }).map((_, i) => (
