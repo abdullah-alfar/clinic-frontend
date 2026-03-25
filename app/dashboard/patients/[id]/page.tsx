@@ -10,9 +10,14 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, UserCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
+import { BookingModal } from '@/components/appointments/BookingModal';
+import { useState, use } from 'react';
+import { CalendarPlus } from 'lucide-react';
 
-export default function PatientDetailPage({ params }: { params: { id: string } }) {
+export default function PatientDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const router = useRouter();
+  const [bookingOpen, setBookingOpen] = useState(false);
   const { data: patient, isLoading } = useQuery({ queryKey: ['patient', params.id], queryFn: () => getPatient(params.id) });
   const { data: appointments } = useQuery({ queryKey: ['appointments'], queryFn: () => getAppointments() });
 
@@ -27,15 +32,27 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Patient Profile</h1>
-          <p className="text-muted-foreground text-sm">Detailed patient record</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Patient Profile</h1>
+            <p className="text-muted-foreground text-sm">Detailed patient record</p>
+          </div>
         </div>
+        <Button onClick={() => setBookingOpen(true)} className="gap-2">
+          <CalendarPlus className="h-4 w-4" />
+          Book Appointment
+        </Button>
       </div>
+
+      <BookingModal 
+        patientId={params.id} 
+        open={bookingOpen} 
+        onOpenChange={setBookingOpen} 
+      />
 
       <Card>
         <CardHeader><CardTitle className="flex items-center gap-2"><UserCircle className="h-5 w-5" />Personal Information</CardTitle></CardHeader>

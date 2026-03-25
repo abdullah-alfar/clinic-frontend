@@ -37,3 +37,13 @@ export async function completeAppointment(id: string) {
   const { data } = await apiClient.patch<ApiResponse<Appointment>>(`/appointments/${id}/complete`);
   return data.data;
 }
+
+export async function getAvailability(params: { date_from?: string; date_to?: string; date?: string; doctor_id?: string }) {
+  const { data } = await apiClient.get<ApiResponse<import('@/types').DoctorAvailabilityResponse[]>>('/appointments/availability', { params });
+  return data.data ?? [];
+}
+
+export async function getNextAvailable(doctor_id?: string) {
+  const { data } = await apiClient.get<ApiResponse<import('@/types').Slot>>('/appointments/next-available', { params: { doctor_id } });
+  return data.data;
+}

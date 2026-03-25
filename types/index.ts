@@ -104,3 +104,14 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
 }
+
+export interface Slot {
+  start_time: string;
+  end_time: string;
+}
+
+export interface DoctorAvailabilityResponse {
+  doctor_id: string;
+  doctor_name: string;
+  slots: Slot[];
+}
