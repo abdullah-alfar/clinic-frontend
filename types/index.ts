@@ -108,6 +108,7 @@ export interface PaginatedResponse<T> {
 export interface Slot {
   start_time: string;
   end_time: string;
+  is_available: boolean;
 }
 
 export interface DoctorAvailabilityResponse {

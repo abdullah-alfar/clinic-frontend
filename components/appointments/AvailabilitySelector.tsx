@@ -78,6 +78,7 @@ export function AvailabilitySelector({ doctorId, date, onSlotSelect, selectedSlo
                 key={slot.start_time}
                 startTime={slot.start_time}
                 endTime={slot.end_time}
+                isAvailable={slot.is_available}
                 selected={selectedSlotStartTime === slot.start_time}
                 onSelect={() => onSlotSelect(slot, docResult.doctor_id)}
               />
