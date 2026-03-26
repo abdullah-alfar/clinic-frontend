@@ -94,6 +94,7 @@ export interface DashboardSummary {
 
 export interface ApiResponse<T> {
   data: T;
+  timezone?: string;
   message: string;
   error: string | null;
 }
@@ -105,10 +106,12 @@ export interface PaginatedResponse<T> {
   limit: number;
 }
 
+export type SlotStatus = 'available' | 'booked' | 'unavailable';
+
 export interface Slot {
   start_time: string;
   end_time: string;
-  is_available: boolean;
+  status: SlotStatus;
 }
 
 export interface DoctorAvailabilityResponse {

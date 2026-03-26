@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { getAvailability, getNextAvailable } from '@/lib/api/appointments';
+
 
 interface UseAvailabilityArgs {
   date_from?: string;
@@ -10,11 +12,17 @@ interface UseAvailabilityArgs {
 }
 
 export function useAvailability({ enabled = true, ...params }: UseAvailabilityArgs) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['availability', params],
     queryFn: () => getAvailability(params),
     enabled,
   });
+
+  return useMemo(() => ({
+    ...query,
+    timezone: query.data?.timezone,
+    data: query.data?.data ?? [],
+  }), [query.data, query.isLoading, query.isError, query.error]);
 }
 
 export function useNextAvailable(doctor_id?: string, enabled = true) {

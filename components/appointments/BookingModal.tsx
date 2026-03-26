@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { DoctorSelect } from './DoctorSelect';
@@ -58,10 +59,15 @@ export function BookingModal({ patientId, open, onOpenChange }: Props) {
     } catch (e) {
       const msg = extractApiError(e);
       setErrorMsg(msg);
-      // selectedSlot is intentionally kept so user sees what failed,
-      // but availability is already being invalidated by onError in the hook
+      setSelectedSlot(null);
     }
   };
+
+  const handleSlotSelect = useCallback((slot: Slot, docId: string) => {
+    setSelectedSlot({ slot, doctor_id: docId });
+    setErrorMsg(null);
+  }, []);
+
 
   const handleClose = (o: boolean) => {
     if (!o) {
@@ -115,10 +121,7 @@ export function BookingModal({ patientId, open, onOpenChange }: Props) {
               date={date ? format(date, 'yyyy-MM-dd') : ''}
               doctorId={doctorId}
               selectedSlotStartTime={selectedSlot?.slot.start_time}
-              onSlotSelect={(slot, docId) => {
-                setSelectedSlot({ slot, doctor_id: docId });
-                setErrorMsg(null);
-              }}
+              onSlotSelect={handleSlotSelect}
             />
           </div>
 
@@ -136,7 +139,7 @@ export function BookingModal({ patientId, open, onOpenChange }: Props) {
         <div className="flex justify-end gap-3 pt-3">
           <Button variant="ghost" onClick={() => handleClose(false)}>Cancel</Button>
           <Button
-            disabled={!selectedSlot || !selectedSlot.slot.is_available || isPending}
+            disabled={!selectedSlot || selectedSlot.slot.status !== 'available' || isPending}
             onClick={handleBook}
           >
             {isPending ? 'Booking...' : 'Confirm Schedule'}

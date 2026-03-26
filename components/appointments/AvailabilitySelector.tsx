@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function AvailabilitySelector({ doctorId, date, onSlotSelect, selectedSlotStartTime }: Props) {
-  const { data: availability, isLoading } = useAvailability({ 
+  const { data: availability, isLoading, timezone } = useAvailability({ 
     date, 
     doctor_id: doctorId === 'any' ? undefined : doctorId 
   });
@@ -48,13 +48,11 @@ export function AvailabilitySelector({ doctorId, date, onSlotSelect, selectedSlo
             <p className="text-xs font-semibold text-primary/80 uppercase mb-2">Next available match:</p>
             <div className="text-sm font-medium mb-3">{format(new Date(nextAvailable.start_time), "MMM d, yyyy")}</div>
             <TimeSlotButton 
-              startTime={nextAvailable.start_time} 
-              endTime={nextAvailable.end_time} 
+              slot={nextAvailable}
+              doctorId={doctorId === 'any' ? '' : doctorId || ''}
+              timezone={timezone}
               selected={selectedSlotStartTime === nextAvailable.start_time}
-              onSelect={() => {
-                // If backend next available doesn't provide the exact doctor yet, we will just pass doctorId or fallback
-                onSlotSelect(nextAvailable, doctorId === 'any' ? '' : doctorId || '');
-              }}
+              onSelect={onSlotSelect}
             />
           </div>
         )}
@@ -76,16 +74,20 @@ export function AvailabilitySelector({ doctorId, date, onSlotSelect, selectedSlo
             {docResult.slots.map(slot => (
               <TimeSlotButton
                 key={slot.start_time}
-                startTime={slot.start_time}
-                endTime={slot.end_time}
-                isAvailable={slot.is_available}
+                slot={slot}
+                doctorId={docResult.doctor_id}
+                status={slot.status}
+                timezone={timezone}
                 selected={selectedSlotStartTime === slot.start_time}
-                onSelect={() => onSlotSelect(slot, docResult.doctor_id)}
+                onSelect={onSlotSelect}
               />
             ))}
           </div>
         </div>
       ))}
+      <div className="text-[10px] text-muted-foreground pt-2 text-center border-t border-dashed mt-4 italic opacity-70">
+        * All appointment times are shown in {timezone || 'clinic local time'}
+      </div>
     </div>
   );
 }

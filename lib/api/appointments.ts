@@ -40,7 +40,7 @@ export async function completeAppointment(id: string) {
 
 export async function getAvailability(params: { date_from?: string; date_to?: string; date?: string; doctor_id?: string }) {
   const { data } = await apiClient.get<ApiResponse<import('@/types').DoctorAvailabilityResponse[]>>('/appointments/availability', { params });
-  return data.data ?? [];
+  return data;
 }
 
 export async function getNextAvailable(doctor_id?: string) {
