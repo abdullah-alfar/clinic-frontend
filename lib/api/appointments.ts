@@ -23,6 +23,14 @@ export async function createAppointment(payload: {
   return data.data;
 }
 
+export async function rescheduleAppointment(
+  id: string,
+  payload: { start_time: string; end_time: string }
+) {
+  const { data } = await apiClient.patch<ApiResponse<Appointment>>(`/appointments/${id}/reschedule`, payload);
+  return data.data;
+}
+
 export async function confirmAppointment(id: string) {
   const { data } = await apiClient.patch<ApiResponse<Appointment>>(`/appointments/${id}/confirm`);
   return data.data;

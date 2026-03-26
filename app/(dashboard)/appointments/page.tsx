@@ -17,8 +17,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, CheckCircle, XCircle, CalendarCheck } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, CalendarCheck, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
+import { BookingModal } from '@/components/appointments/BookingModal';
 
 const schema = z.object({
   patient_id: z.string().min(1, 'Patient is required'),
@@ -43,6 +44,7 @@ export default function AppointmentsPage() {
   const [doctorId, setDoctorId] = useState('');
   const [patientId, setPatientId] = useState('');
   const [statusError, setStatusError] = useState<string | null>(null);
+  const [rescheduleData, setRescheduleData] = useState<{ id: string; doctor_id: string; patient_id: string } | undefined>(undefined);
 
   const { data: appointments, isLoading } = useQuery({ queryKey: ['appointments'], queryFn: () => getAppointments() });
   const { data: doctors } = useQuery({ queryKey: ['doctors'], queryFn: getDoctors });
@@ -135,6 +137,13 @@ export default function AppointmentsPage() {
         )}
       </div>
 
+      <BookingModal
+        open={!!rescheduleData}
+        onOpenChange={(o) => { if (!o) setRescheduleData(undefined); }}
+        patientId={rescheduleData?.patient_id || ''}
+        appointmentToReschedule={rescheduleData}
+      />
+
       {statusError && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-md mb-4 flex justify-between items-center animate-in fade-in zoom-in duration-200">
           <span>{statusError}</span>
@@ -191,6 +200,11 @@ export default function AppointmentsPage() {
                       {(a.status === 'scheduled' || a.status === 'confirmed') && canCancel && (
                         <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-destructive border-destructive/20 hover:bg-destructive/5" onClick={() => cancelMut.mutate(a.id)}>
                           <XCircle className="h-3 w-3" />Cancel
+                        </Button>
+                      )}
+                      {(a.status === 'scheduled' || a.status === 'confirmed') && canCreate && (
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setRescheduleData({ id: a.id, doctor_id: a.doctor_id, patient_id: a.patient_id })}>
+                          <CalendarDays className="h-3 w-3" />Reschedule
                         </Button>
                       )}
                     </div>

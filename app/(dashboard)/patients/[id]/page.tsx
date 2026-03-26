@@ -2,26 +2,32 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getPatient } from '@/lib/api/patients';
-import { getAppointments } from '@/lib/api/appointments';
+import { getPatientTimeline } from '@/lib/api/visits';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, UserCircle } from 'lucide-react';
+import { ArrowLeft, UserCircle, CalendarPlus, FileText, Calendar as CalendarIcon, Stethoscope } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { BookingModal } from '@/components/appointments/BookingModal';
+import { AddNoteModal } from '@/components/patients/AddNoteModal';
 import { useState, use } from 'react';
-import { CalendarPlus } from 'lucide-react';
+import { useAuthStore } from '@/hooks/useAuthStore';
 
 export default function PatientDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = use(props.params);
   const router = useRouter();
   const [bookingOpen, setBookingOpen] = useState(false);
-  const { data: patient, isLoading } = useQuery({ queryKey: ['patient', params.id], queryFn: () => getPatient(params.id) });
-  const { data: appointments } = useQuery({ queryKey: ['appointments'], queryFn: () => getAppointments() });
+  const [noteOpen, setNoteOpen] = useState(false);
+  const user = useAuthStore((s) => s.user);
 
-  const patientAppts = appointments?.filter((a) => a.patient_id === params.id) ?? [];
+  const { data: patient, isLoading } = useQuery({ queryKey: ['patient', params.id], queryFn: () => getPatient(params.id) });
+  const { data: timelineData, isLoading: timelineLoading } = useQuery({ queryKey: ['timeline', params.id], queryFn: () => getPatientTimeline(params.id) });
+
+  const timelineItems = [...(timelineData?.appointments || []), ...(timelineData?.visits || [])].sort(
+    (a, b) => new Date('start_time' in b ? b.start_time : b.created_at).getTime() - new Date('start_time' in a ? a.start_time : a.created_at).getTime()
+  );
 
   const statusVariant = (s: string) => {
     if (s === 'completed') return 'default';
@@ -42,16 +48,30 @@ export default function PatientDetailPage(props: { params: Promise<{ id: string 
             <p className="text-muted-foreground text-sm">Detailed patient record</p>
           </div>
         </div>
-        <Button onClick={() => setBookingOpen(true)} className="gap-2">
-          <CalendarPlus className="h-4 w-4" />
-          Book Appointment
-        </Button>
+        <div className="flex items-center gap-3">
+          {user?.role === 'doctor' && (
+            <Button variant="outline" onClick={() => setNoteOpen(true)} className="gap-2">
+              <FileText className="h-4 w-4" />
+              Add Notes
+            </Button>
+          )}
+          <Button onClick={() => setBookingOpen(true)} className="gap-2">
+            <CalendarPlus className="h-4 w-4" />
+            Book Appointment
+          </Button>
+        </div>
       </div>
 
       <BookingModal 
         patientId={params.id} 
         open={bookingOpen} 
         onOpenChange={setBookingOpen} 
+      />
+
+      <AddNoteModal
+        patientId={params.id}
+        open={noteOpen}
+        onOpenChange={setNoteOpen}
       />
 
       <Card>
@@ -76,21 +96,63 @@ export default function PatientDetailPage(props: { params: Promise<{ id: string 
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Appointment History</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">Timeline & History</CardTitle></CardHeader>
         <CardContent>
-          {patientAppts.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">No appointments on record.</p>
+          {timelineLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          ) : timelineItems.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No history or notes on record.</p>
           ) : (
-            <div className="divide-y divide-border">
-              {patientAppts.map((a) => (
-                <div key={a.id} className="py-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">{format(new Date(a.start_time), 'PPp')}</p>
-                    <p className="text-xs text-muted-foreground">{a.reason || 'General visit'}</p>
+            <div className="relative border-l border-border ml-3 mt-4 space-y-6">
+              {timelineItems.map((item) => {
+                const isVisit = 'notes' in item && !('reason' in item);
+                const date = new Date(isVisit ? (item as any).created_at : (item as any).start_time);
+                
+                return (
+                  <div key={item.id} className="relative pl-6">
+                    <div className="absolute -left-3.5 top-1 bg-background border border-border p-1 rounded-full">
+                      {isVisit ? <Stethoscope className="h-4 w-4 text-blue-500" /> : <CalendarIcon className="h-4 w-4 text-orange-500" />}
+                    </div>
+                    <div className="bg-card border border-border rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm font-medium flex items-center gap-2">
+                          {isVisit ? 'Medical Visit Note' : 'Appointment'}
+                          {!isVisit && <Badge variant={statusVariant((item as any).status)} className="capitalize text-[10px] h-5">{((item as any).status)}</Badge>}
+                        </div>
+                        <div className="text-xs text-muted-foreground">{format(date, 'PPp')}</div>
+                      </div>
+                      
+                      {isVisit ? (
+                        <div className="text-sm space-y-2 mt-2">
+                          <div>
+                            <span className="font-semibold text-xs text-muted-foreground uppercase tracking-wider block mb-1">Notes</span>
+                            <p className="text-foreground whitespace-pre-wrap">{(item as any).notes}</p>
+                          </div>
+                          {(item as any).diagnosis && (
+                            <div>
+                              <span className="font-semibold text-xs text-muted-foreground uppercase tracking-wider block mb-1">Diagnosis</span>
+                              <p className="text-foreground">{(item as any).diagnosis}</p>
+                            </div>
+                          )}
+                          {(item as any).prescription && (
+                            <div>
+                              <span className="font-semibold text-xs text-muted-foreground uppercase tracking-wider block mb-1">Prescription</span>
+                              <p className="text-foreground">{(item as any).prescription}</p>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">
+                          <p>Reason: {(item as any).reason || 'General visit'}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <Badge variant={statusVariant(a.status)} className="capitalize text-xs">{a.status}</Badge>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

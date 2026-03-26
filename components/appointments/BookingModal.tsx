@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -13,23 +13,36 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Slot } from '@/types';
 import { useCreateAppointment, extractApiError } from '@/hooks/useCreateAppointment';
+import { useRescheduleAppointment } from '@/hooks/useRescheduleAppointment';
 import { format } from 'date-fns';
 
 interface Props {
   patientId: string;
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  appointmentToReschedule?: { id: string; doctor_id: string; patient_id: string };
 }
 
-export function BookingModal({ patientId, open, onOpenChange }: Props) {
-  const [doctorId, setDoctorId] = useState<string>('any');
+export function BookingModal({ patientId, open, onOpenChange, appointmentToReschedule }: Props) {
+  const [doctorId, setDoctorId] = useState<string>(appointmentToReschedule?.doctor_id || 'any');
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedSlot, setSelectedSlot] = useState<{ slot: Slot; doctor_id: string } | null>(null);
   const [reason, setReason] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const { mutateAsync: createAppointment, isPending } = useCreateAppointment();
+  const { mutateAsync: createAppointment, isPending: isCreating } = useCreateAppointment();
+  const { mutateAsync: rescheduleAppointment, isPending: isRescheduling } = useRescheduleAppointment();
+  const isPending = isCreating || isRescheduling;
+
+  useEffect(() => {
+    if (open) {
+      setDoctorId(appointmentToReschedule?.doctor_id || 'any');
+      setDate(new Date());
+      setSelectedSlot(null);
+      setReason('');
+    }
+  }, [open, appointmentToReschedule]);
 
   const handleBook = async () => {
     if (!selectedSlot) return;
@@ -41,14 +54,25 @@ export function BookingModal({ patientId, open, onOpenChange }: Props) {
     setErrorMsg(null);
     setSuccessMsg(null);
     try {
-      await createAppointment({
-        patient_id: patientId,
-        doctor_id: selectedSlot.doctor_id,
-        start_time: selectedSlot.slot.start_time,
-        end_time: selectedSlot.slot.end_time,
-        reason,
-      });
-      setSuccessMsg('Appointment booked successfully!');
+      if (appointmentToReschedule) {
+        await rescheduleAppointment({
+          id: appointmentToReschedule.id,
+          payload: {
+            start_time: selectedSlot.slot.start_time,
+            end_time: selectedSlot.slot.end_time,
+          }
+        });
+        setSuccessMsg('Appointment rescheduled successfully!');
+      } else {
+        await createAppointment({
+          patient_id: patientId,
+          doctor_id: selectedSlot.doctor_id,
+          start_time: selectedSlot.slot.start_time,
+          end_time: selectedSlot.slot.end_time,
+          reason,
+        });
+        setSuccessMsg('Appointment booked successfully!');
+      }
       setSelectedSlot(null);
       setReason('');
       // Close after a brief moment so user sees success
@@ -81,8 +105,12 @@ export function BookingModal({ patientId, open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-[600px] w-full">
         <DialogHeader>
-          <DialogTitle className="text-xl">Book Appointment</DialogTitle>
-          <DialogDescription>Find available times and schedule a new visit instantly.</DialogDescription>
+          <DialogTitle className="text-xl">
+            {appointmentToReschedule ? 'Reschedule Appointment' : 'Book Appointment'}
+          </DialogTitle>
+          <DialogDescription>
+            {appointmentToReschedule ? 'Select a new time for this appointment.' : 'Find available times and schedule a new visit instantly.'}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-2">
@@ -142,7 +170,7 @@ export function BookingModal({ patientId, open, onOpenChange }: Props) {
             disabled={!selectedSlot || selectedSlot.slot.status !== 'available' || isPending}
             onClick={handleBook}
           >
-            {isPending ? 'Booking...' : 'Confirm Schedule'}
+            {isPending ? (appointmentToReschedule ? 'Rescheduling...' : 'Booking...') : 'Confirm Schedule'}
           </Button>
         </div>
       </DialogContent>

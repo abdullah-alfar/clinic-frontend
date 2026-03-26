@@ -119,3 +119,21 @@ export interface DoctorAvailabilityResponse {
   doctor_name: string;
   slots: Slot[];
 }
+
+export interface Visit {
+  id: string;
+  tenant_id: string;
+  patient_id: string;
+  appointment_id?: string;
+  doctor_id: string;
+  notes: string;
+  diagnosis: string;
+  prescription: string;
+  created_at: string;
+}
+
+export interface TimelineResponse {
+  appointments: Appointment[];
+  visits: Visit[];
+  notes: Visit[];
+}
