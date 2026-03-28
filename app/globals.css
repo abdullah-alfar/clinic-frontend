@@ -109,3 +109,105 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* =====================================================================
+   FullCalendar — design system integration
+   Overrides FullCalendar's default styles to use our CSS variables.
+   ===================================================================== */
+
+/* Grid lines */
+.fc .fc-timegrid-slot {
+  height: 2.5rem;
+  border-color: var(--border);
+}
+
+.fc .fc-timegrid-slot-minor {
+  border-color: color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+/* Column headers (Mon, Tue …) */
+.fc .fc-col-header-cell {
+  border-color: var(--border);
+  background: var(--muted);
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 6px 4px;
+}
+
+/* Time axis labels */
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-timegrid-slot-label-cushion {
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+}
+
+/* Scrollable area */
+.fc .fc-scroller {
+  overflow: auto !important;
+}
+
+/* Now indicator line */
+.fc .fc-timegrid-now-indicator-line {
+  border-color: var(--primary);
+  border-width: 2px;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  border-top-color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* Event wrapper — we render our own content, so strip FC's chrome */
+.fc .fc-event {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 1px 2px !important;
+}
+
+.fc .fc-event-main {
+  padding: 0;
+  height: 100%;
+}
+
+/* Drag mirror (ghost while dragging) */
+.fc .fc-event-mirror {
+  opacity: 0.55;
+}
+
+/* Highlight slot while hovering a dragged event */
+.fc .fc-highlight {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: 4px;
+}
+
+/* Day column lines */
+.fc .fc-timegrid-col {
+  border-color: var(--border);
+}
+
+/* Remove the outer table border */
+.fc .fc-scrollgrid {
+  border-color: var(--border);
+}
+
+.fc .fc-scrollgrid-sync-table {
+  border-color: var(--border);
+}
+
+/* Today column highlight */
+.fc .fc-day-today {
+  background: color-mix(in srgb, var(--primary) 4%, transparent) !important;
+}
+
+/* Smooth resize cursor */
+.fc .fc-event-resizer {
+  cursor: ns-resize;
+}

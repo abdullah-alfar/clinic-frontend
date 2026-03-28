@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -76,9 +77,16 @@ export default function AppointmentsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Appointments</h1>
           <p className="text-muted-foreground text-sm">Manage and track clinic appointments</p>
         </div>
-        {canCreate && (
-          <>
-            <Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" />New Appointment</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/appointments/calendar">
+              <CalendarDays className="mr-2 h-4 w-4" />
+              Calendar View
+            </Link>
+          </Button>
+          {canCreate && (
+            <>
+              <Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" />New Appointment</Button>
             <ModalForm
               open={open}
               onOpenChange={setOpen}
@@ -135,6 +143,7 @@ export default function AppointmentsPage() {
             </ModalForm>
           </>
         )}
+        </div>
       </div>
 
       <BookingModal
