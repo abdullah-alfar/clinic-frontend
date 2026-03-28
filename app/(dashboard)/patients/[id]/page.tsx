@@ -12,6 +12,9 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { BookingModal } from '@/components/appointments/BookingModal';
 import { AddNoteModal } from '@/components/patients/AddNoteModal';
+import { PatientInvoices } from '@/components/invoices/PatientInvoices';
+import { AttachmentList } from '@/features/attachments/components/AttachmentList';
+import { AttachmentUploader } from '@/features/attachments/components/AttachmentUploader';
 import { useState, use } from 'react';
 import { useAuthStore } from '@/hooks/useAuthStore';
 
@@ -92,6 +95,23 @@ export default function PatientDetailPage(props: { params: Promise<{ id: string 
           ) : (
             <p className="text-muted-foreground">Patient not found.</p>
           )}
+        </CardContent>
+      </Card>
+
+      <PatientInvoices patientId={params.id} />
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-4">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Reports & Files
+          </CardTitle>
+          <div className="mt-0">
+            <AttachmentUploader patientId={params.id} />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <AttachmentList patientId={params.id} />
         </CardContent>
       </Card>
 

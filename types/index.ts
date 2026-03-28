@@ -137,3 +137,14 @@ export interface TimelineResponse {
   visits: Visit[];
   notes: Visit[];
 }
+
+export interface Invoice {
+  id: string;
+  patient_id: string;
+  appointment_id?: string;
+  amount: number;
+  status: 'pending' | 'paid';
+  created_at: string;
+  updated_at: string;
+}
+
