@@ -26,34 +26,61 @@ export function AvailabilitySelector({ doctorId, date, onSlotSelect, selectedSlo
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-3 gap-2 mt-2">
-        {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}
+      <div className="grid grid-cols-3 gap-3 mt-4">
+        {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}
       </div>
     );
   }
 
   const hasAvailability = availability && availability.length > 0 && availability.some(d => d.slots.length > 0);
 
+  // Find the first available slot across all doctors to recommend it
+  let recommendedSlotTime: string | undefined;
+  if (hasAvailability) {
+    for (const doc of availability!) {
+      const firstAvailable = doc.slots.find(s => s.status === 'available');
+      if (firstAvailable) {
+        recommendedSlotTime = firstAvailable.start_time;
+        break;
+      }
+    }
+  }
+
   if (!hasAvailability) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 text-center bg-muted/40 rounded-lg border mt-2">
-        <Clock className="h-8 w-8 text-muted-foreground mb-3 opacity-80" />
-        <h3 className="font-semibold text-base mb-1">No slots available</h3>
-        <p className="text-xs text-muted-foreground mb-4 max-w-[200px]">There are no open times on this date.</p>
-        <Button variant="secondary" size="sm" onClick={() => fetchNext()}>
-          Find Next Available
-        </Button>
-        {nextAvailable && (
-          <div className="mt-5 p-3 bg-primary/10 rounded-md border border-primary/20 w-full">
-            <p className="text-xs font-semibold text-primary/80 uppercase mb-2">Next available match:</p>
-            <div className="text-sm font-medium mb-3">{format(new Date(nextAvailable.start_time), "MMM d, yyyy")}</div>
-            <TimeSlotButton 
-              slot={nextAvailable}
-              doctorId={doctorId === 'any' ? '' : doctorId || ''}
-              timezone={timezone}
-              selected={selectedSlotStartTime === nextAvailable.start_time}
-              onSelect={onSlotSelect}
-            />
+      <div className="flex flex-col items-center justify-center p-8 text-center bg-muted/20 rounded-2xl border-2 border-dashed border-border/40 mt-4 transition-all">
+        <div className="p-4 rounded-full bg-background shadow-sm mb-4">
+          <Clock className="h-8 w-8 text-muted-foreground opacity-50" />
+        </div>
+        <h3 className="font-bold text-lg mb-2">No slots available today</h3>
+        <p className="text-sm text-muted-foreground mb-6 max-w-[240px]">We couldn't find any open times for the selected date.</p>
+        
+        {!nextAvailable ? (
+          <Button variant="outline" className="rounded-xl px-6" onClick={() => fetchNext()}>
+            Find Fastest Available
+          </Button>
+        ) : (
+          <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="h-px bg-border/40 w-full" />
+            <div className="space-y-3">
+              <p className="text-xs font-bold text-primary uppercase tracking-widest text-center">Fastest Available Match</p>
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-primary/5 border border-primary/20 shadow-sm">
+                <div className="text-left">
+                  <p className="text-sm font-bold">{format(new Date(nextAvailable.start_time), "EEEE, MMM d")}</p>
+                  <p className="text-xs text-muted-foreground">Next possible opening</p>
+                </div>
+                <div className="w-32">
+                  <TimeSlotButton 
+                    slot={nextAvailable}
+                    doctorId={doctorId === 'any' ? '' : doctorId || ''}
+                    timezone={timezone}
+                    selected={selectedSlotStartTime === nextAvailable.start_time}
+                    onSelect={onSlotSelect}
+                    isRecommended
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -61,32 +88,37 @@ export function AvailabilitySelector({ doctorId, date, onSlotSelect, selectedSlo
   }
 
   return (
-    <div className="space-y-5 mt-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+    <div className="space-y-6 mt-4 max-h-[300px] overflow-y-auto pr-3 custom-scrollbar">
       {availability?.map((docResult) => docResult.slots.length > 0 && (
-        <div key={docResult.doctor_id} className="space-y-2">
+        <div key={docResult.doctor_id} className="space-y-3">
           {availability.length > 1 && (
-            <h4 className="text-xs font-semibold flex items-center gap-1.5 text-muted-foreground uppercase tracking-wide">
-              <CalendarCheck className="h-3.5 w-3.5" /> 
-              {docResult.doctor_name || "Doctor"}
-            </h4>
+            <div className="flex items-center gap-2 pb-1">
+               <div className="h-px flex-1 bg-border/40" />
+               <h4 className="text-[10px] font-bold flex items-center gap-1.5 text-muted-foreground uppercase tracking-widest px-2">
+                 <CalendarCheck className="h-3 w-3 text-primary" /> 
+                 {docResult.doctor_name || "Doctor"}
+               </h4>
+               <div className="h-px flex-1 bg-border/40" />
+            </div>
           )}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-3">
             {docResult.slots.map(slot => (
               <TimeSlotButton
                 key={slot.start_time}
                 slot={slot}
                 doctorId={docResult.doctor_id}
-                status={slot.status}
+                status={slot.status as any}
                 timezone={timezone}
                 selected={selectedSlotStartTime === slot.start_time}
                 onSelect={onSlotSelect}
+                isRecommended={slot.start_time === recommendedSlotTime}
               />
             ))}
           </div>
         </div>
       ))}
-      <div className="text-[10px] text-muted-foreground pt-2 text-center border-t border-dashed mt-4 italic opacity-70">
-        * All appointment times are shown in {timezone || 'clinic local time'}
+      <div className="text-[10px] text-muted-foreground pt-4 text-center border-t border-dashed mt-6 italic opacity-60">
+        Showing availability in {timezone || 'clinic local time'}
       </div>
     </div>
   );

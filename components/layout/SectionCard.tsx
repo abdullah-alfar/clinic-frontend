@@ -14,23 +14,27 @@ interface SectionCardProps {
 
 export function SectionCard({ title, description, icon: Icon, children, className, contentClassName, action }: SectionCardProps) {
   return (
-    <Card className={cn("overflow-hidden border-border/80 shadow-sm", className)}>
-      {(title || action || description) && (
-        <CardHeader className="flex flex-row items-start lg:items-center justify-between gap-4 pb-4 space-y-0">
-          <div className="space-y-1">
-            {title && (
-              <CardTitle className="text-base flex items-center gap-2">
-                {Icon && <Icon className="h-5 w-5 text-muted-foreground" />}
-                {title}
-              </CardTitle>
-            )}
-            {description && <CardDescription>{description}</CardDescription>}
+    <Card className={cn("overflow-hidden border-border/60 shadow-sm modern-gradient-subtle bg-card/40 backdrop-blur-sm", className)}>
+      {(title || action || description || Icon) && (
+        <CardHeader className="flex flex-row items-start justify-between gap-4 p-6 pb-4 space-y-0">
+          <div className="space-y-1.5 flex-1">
+            <div className="flex items-center gap-2">
+              {Icon && <Icon className="h-4.5 w-4.5 text-primary" />}
+              {title && (
+                <CardTitle className="text-lg font-semibold tracking-tight">
+                  {title}
+                </CardTitle>
+              )}
+            </div>
+            {description && <CardDescription className="text-sm text-muted-foreground">{description}</CardDescription>}
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </CardHeader>
       )}
-      <CardContent className={cn("pt-0", !title && !action && !description && "pt-6", contentClassName)}>
-        {children}
+      <CardContent className={cn("p-6 pt-0", (!title && !action && !description && !Icon) && "pt-6", contentClassName)}>
+        <div className="grid gap-4">
+          {children}
+        </div>
       </CardContent>
     </Card>
   );

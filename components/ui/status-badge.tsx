@@ -7,35 +7,37 @@ interface StatusBadgeProps {
 }
 
 const STATUS_CONFIG: Record<string, { color: string; label: string }> = {
-  scheduled: { color: 'var(--primary)', label: 'Scheduled' },
-  confirmed: { color: 'var(--primary)', label: 'Confirmed' },
-  completed: { color: 'var(--foreground)', label: 'Completed' },
-  canceled: { color: 'var(--destructive)', label: 'Canceled' },
-  pending: { color: 'var(--amber-500, #f59e0b)', label: 'Pending' },
-  paid: { color: 'var(--primary)', label: 'Paid' },
-  sent: { color: 'var(--primary)', label: 'Sent' },
-  read: { color: 'var(--muted-foreground)', label: 'Read' },
-  unread: { color: 'var(--primary)', label: 'Unread' },
+  scheduled: { color: 'hsl(var(--primary))', label: 'Scheduled' },
+  confirmed: { color: 'hsl(var(--primary))', label: 'Confirmed' },
+  completed: { color: 'rgb(34 197 94)', label: 'Completed' }, // success green
+  canceled: { color: 'hsl(var(--destructive))', label: 'Canceled' },
+  pending: { color: 'rgb(245 158 11)', label: 'Pending' }, // amber
+  paid: { color: 'rgb(34 197 94)', label: 'Paid' },
+  sent: { color: 'hsl(var(--primary))', label: 'Sent' },
+  read: { color: 'hsl(var(--muted-foreground))', label: 'Read' },
+  unread: { color: 'hsl(var(--primary))', label: 'Unread' },
+  available: { color: 'hsl(var(--primary))', label: 'Available' },
+  booked: { color: 'hsl(var(--destructive))', label: 'Booked' },
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const normStatus = (status || '').toLowerCase();
-  const config = STATUS_CONFIG[normStatus] || { color: 'var(--muted-foreground)', label: status };
+  const config = STATUS_CONFIG[normStatus] || { color: 'hsl(var(--muted-foreground))', label: status };
 
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider relative overflow-hidden transition-all duration-300",
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-300",
         className
       )}
       style={{
-        backgroundColor: `color-mix(in srgb, ${config.color} 12%, transparent)`,
-        color: `color-mix(in srgb, ${config.color} 90%, black)`,
-        boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${config.color} 15%, transparent)`,
+        backgroundColor: `color-mix(in srgb, ${config.color} 10%, transparent)`,
+        color: config.color,
+        border: `1px solid color-mix(in srgb, ${config.color} 20%, transparent)`,
       }}
     >
       <span
-        className="h-1.5 w-1.5 rounded-full"
+        className="h-1.5 w-1.5 rounded-full animate-pulse"
         style={{
           backgroundColor: config.color,
           boxShadow: `0 0 8px ${config.color}`,

@@ -13,16 +13,16 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, className, children, onBack }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6", className)}>
-      <div className="flex items-center gap-3">
+    <div className={cn("flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8", className)}>
+      <div className="flex items-start gap-4">
         {onBack && (
-          <Button variant="ghost" size="icon" onClick={onBack} aria-label="Go back" className="h-8 w-8">
+          <Button variant="outline" size="icon" onClick={onBack} aria-label="Go back" className="h-9 w-9 rounded-xl shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         )}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
-          {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">{title}</h1>
+          {description && <p className="text-base text-muted-foreground max-w-2xl">{description}</p>}
         </div>
       </div>
       {children && (
