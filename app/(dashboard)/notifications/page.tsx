@@ -8,11 +8,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BellRing, CheckCheck } from 'lucide-react';
-import { format } from 'date-fns';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { formatClinicDateTime } from '@/lib/formatters';
+import { useTheme } from '@/providers/ThemeProvider';
 import type { Notification } from '@/types';
 
 export default function NotificationsPage() {
   const qc = useQueryClient();
+  const { tenant } = useTheme();
+  const tz = tenant?.timezone;
 
   const { data: notifications, isLoading } = useQuery({
     queryKey: ['notifications'],
@@ -35,12 +40,10 @@ export default function NotificationsPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
-          <p className="text-muted-foreground text-sm">{unread > 0 ? `${unread} unread notifications` : 'All caught up!'}</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Notifications"
+        description={unread > 0 ? `${unread} unread notifications` : 'All caught up!'}
+      />
 
       {notifError && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-md mb-4 flex justify-between items-center animate-in fade-in zoom-in duration-200">
@@ -70,7 +73,7 @@ export default function NotificationsPage() {
               <div className="flex items-start justify-between gap-2 mb-1">
                 <p className={`text-sm font-semibold ${n.status === 'read' ? 'text-muted-foreground' : 'text-foreground'}`}>{n.title}</p>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={n.status === 'read' ? 'outline' : 'default'} className="text-xs capitalize">{n.status}</Badge>
+                  <StatusBadge status={n.status} className="text-xs" />
                   {n.status !== 'read' && (
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-xs gap-1" onClick={() => markRead.mutate(n.id)}>
                       <CheckCheck className="h-3 w-3" />Mark read
@@ -79,7 +82,7 @@ export default function NotificationsPage() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">{n.message}</p>
-              <p className="text-xs text-muted-foreground mt-1.5">{format(new Date(n.created_at), 'MMM d, yyyy · h:mm a')}</p>
+              <p className="text-xs text-muted-foreground mt-1.5">{formatClinicDateTime(n.created_at, tz)}</p>
             </div>
           </div>
         ))}

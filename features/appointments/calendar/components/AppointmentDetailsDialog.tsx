@@ -1,8 +1,10 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { formatClinicDate, formatClinicTime } from '@/lib/formatters';
+import { useTheme } from '@/providers/ThemeProvider';
+
 import {
   Dialog,
   DialogContent,
@@ -48,6 +50,8 @@ export function AppointmentDetailsDialog({
 }: AppointmentDetailsDialogProps) {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
+  const { tenant } = useTheme();
+  const tz = tenant?.timezone;
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['calendar-appointments'] });
@@ -87,8 +91,7 @@ export function AppointmentDetailsDialog({
   const isPending =
     confirmMut.isPending || cancelMut.isPending || completeMut.isPending;
 
-  const startDate = new Date(appointment.start_time);
-  const endDate = new Date(appointment.end_time);
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -114,10 +117,10 @@ export function AppointmentDetailsDialog({
             <Clock className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
             <div>
               <p className="font-medium">
-                {format(startDate, 'EEEE, MMMM d, yyyy')}
+                {formatClinicDate(appointment.start_time, tz, 'EEEE, MMMM d, yyyy')}
               </p>
               <p className="text-muted-foreground">
-                {format(startDate, 'h:mm a')} – {format(endDate, 'h:mm a')}
+                {formatClinicTime(appointment.start_time, tz)} – {formatClinicTime(appointment.end_time, tz)}
               </p>
             </div>
           </div>

@@ -1,105 +1,139 @@
 @import "tailwindcss";
 
+/* =========================================================
+   Tailwind v4 @theme — maps utility classes to CSS tokens.
+   Variables store raw HSL channels: "H S% L%"
+   Usage in code: bg-primary, text-foreground, border-border …
+   ========================================================= */
 @theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
   --radius: var(--radius);
   --font-sans: "Inter", system-ui, sans-serif;
   --sidebar-width: 260px;
+  --header-height: 4rem;
+
+  /* Custom Premium Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
 
-/* CSS Variables for shadcn/ui compatibility and tenant theming */
+/* =========================================================
+   Tailwind v4 Utilities
+   ========================================================= */
+@utility glass-card {
+  background: color-mix(in srgb, hsl(var(--card)) 80%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, hsl(var(--border)) 40%, transparent);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility modern-gradient-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, color-mix(in srgb, hsl(var(--primary)) 80%, black) 100%);
+}
+
+@utility modern-gradient-subtle {
+  background: linear-gradient(135deg, color-mix(in srgb, hsl(var(--primary)) 5%, transparent) 0%, color-mix(in srgb, hsl(var(--primary)) 2%, transparent) 100%);
+}
+
+/* =========================================================
+   Light theme (default)
+   All values are raw HSL channels: H S% L%
+   Referenced as: hsl(var(--primary)) etc.
+   ========================================================= */
 :root {
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(222.2 47.4% 11.2%);
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(222.2 47.4% 11.2%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(222.2 47.4% 11.2%);
-  --primary: hsl(221.2 83.2% 53.3%);
-  --primary-foreground: hsl(210 40% 98%);
-  --secondary: hsl(210 40% 96.1%);
-  --secondary-foreground: hsl(222.2 47.4% 11.2%);
-  --muted: hsl(210 40% 96.1%);
-  --muted-foreground: hsl(215.4 16.3% 46.9%);
-  --accent: hsl(210 40% 96.1%);
-  --accent-foreground: hsl(222.2 47.4% 11.2%);
-  --destructive: hsl(0 84.2% 60.2%);
-  --destructive-foreground: hsl(210 40% 98%);
-  --border: hsl(214.3 31.8% 91.4%);
-  --input: hsl(214.3 31.8% 91.4%);
-  --ring: hsl(221.2 83.2% 53.3%);
+  --background: 0 0% 100%;
+  --foreground: 222.2 47.4% 11.2%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 47.4% 11.2%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 47.4% 11.2%;
+
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221.2 83.2% 53.3%;
   --radius: 0.5rem;
-  --clinic-primary: #2563eb;
-  --clinic-secondary: #64748b;
+
   --sidebar-width: 260px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: hsl(222.2 84% 4.9%);
-    --foreground: hsl(210 40% 98%);
-    --card: hsl(222.2 84% 4.9%);
-    --card-foreground: hsl(210 40% 98%);
-    --popover: hsl(222.2 84% 4.9%);
-    --popover-foreground: hsl(210 40% 98%);
-    --primary: hsl(217.2 91.2% 59.8%);
-    --primary-foreground: hsl(210 40% 98%);
-    --secondary: hsl(217.2 32.6% 17.5%);
-    --secondary-foreground: hsl(210 40% 98%);
-    --muted: hsl(217.2 32.6% 17.5%);
-    --muted-foreground: hsl(215 20.2% 65.1%);
-    --accent: hsl(217.2 32.6% 17.5%);
-    --accent-foreground: hsl(210 40% 98%);
-    --destructive: hsl(0 62.8% 30.6%);
-    --destructive-foreground: hsl(210 40% 98%);
-    --border: hsl(217.2 32.6% 17.5%);
-    --input: hsl(217.2 32.6% 17.5%);
-    --ring: hsl(224.3 76.3% 48%);
-  }
-}
-
+/* =========================================================
+   Dark theme
+   ========================================================= */
 .dark {
-  --background: hsl(222.2 84% 4.9%);
-  --foreground: hsl(210 40% 98%);
-  --card: hsl(222.2 84% 4.9%);
-  --card-foreground: hsl(210 40% 98%);
-  --popover: hsl(222.2 84% 4.9%);
-  --popover-foreground: hsl(210 40% 98%);
-  --primary: hsl(217.2 91.2% 59.8%);
-  --primary-foreground: hsl(222.2 47.4% 11.2%);
-  --secondary: hsl(217.2 32.6% 17.5%);
-  --secondary-foreground: hsl(210 40% 98%);
-  --muted: hsl(217.2 32.6% 17.5%);
-  --muted-foreground: hsl(215 20.2% 65.1%);
-  --accent: hsl(217.2 32.6% 17.5%);
-  --accent-foreground: hsl(210 40% 98%);
-  --destructive: hsl(0 62.8% 30.6%);
-  --destructive-foreground: hsl(210 40% 98%);
-  --border: hsl(217.2 32.6% 17.5%);
-  --input: hsl(217.2 32.6% 17.5%);
-  --ring: hsl(224.3 76.3% 48%);
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+
+  --card: 222.2 84% 7%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 222.2 84% 7%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 217.2 32.6% 20%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 217.2 91.2% 59.8%;
 }
 
-* {
+/* Global base styles */
+*,
+*::before,
+*::after {
   border-color: hsl(var(--border));
+  box-sizing: border-box;
 }
 
 body {
@@ -108,31 +142,53 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, hsl(var(--muted)) 80%, black);
+}
+
+/* Better Typography */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.02em;
 }
 
 /* =====================================================================
    FullCalendar — design system integration
-   Overrides FullCalendar's default styles to use our CSS variables.
    ===================================================================== */
 
-/* Grid lines */
 .fc .fc-timegrid-slot {
   height: 2.5rem;
-  border-color: var(--border);
+  border-color: hsl(var(--border));
 }
 
 .fc .fc-timegrid-slot-minor {
-  border-color: color-mix(in srgb, var(--border) 50%, transparent);
+  border-color: color-mix(in srgb, hsl(var(--border)) 50%, transparent);
 }
 
-/* Column headers (Mon, Tue …) */
 .fc .fc-col-header-cell {
-  border-color: var(--border);
-  background: var(--muted);
+  border-color: hsl(var(--border));
+  background: hsl(var(--muted));
 }
 
 .fc .fc-col-header-cell-cushion {
-  color: var(--muted-foreground);
+  color: hsl(var(--muted-foreground));
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -141,30 +197,26 @@ body {
   padding: 6px 4px;
 }
 
-/* Time axis labels */
 .fc .fc-timegrid-axis-cushion,
 .fc .fc-timegrid-slot-label-cushion {
-  color: var(--muted-foreground);
+  color: hsl(var(--muted-foreground));
   font-size: 0.7rem;
 }
 
-/* Scrollable area */
 .fc .fc-scroller {
   overflow: auto !important;
 }
 
-/* Now indicator line */
 .fc .fc-timegrid-now-indicator-line {
-  border-color: var(--primary);
+  border-color: hsl(var(--primary));
   border-width: 2px;
 }
 
 .fc .fc-timegrid-now-indicator-arrow {
-  border-top-color: var(--primary);
-  border-bottom-color: var(--primary);
+  border-top-color: hsl(var(--primary));
+  border-bottom-color: hsl(var(--primary));
 }
 
-/* Event wrapper — we render our own content, so strip FC's chrome */
 .fc .fc-event {
   border: none !important;
   background: transparent !important;
@@ -177,37 +229,31 @@ body {
   height: 100%;
 }
 
-/* Drag mirror (ghost while dragging) */
 .fc .fc-event-mirror {
   opacity: 0.55;
 }
 
-/* Highlight slot while hovering a dragged event */
 .fc .fc-highlight {
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  background: color-mix(in srgb, hsl(var(--primary)) 12%, transparent);
   border-radius: 4px;
 }
 
-/* Day column lines */
 .fc .fc-timegrid-col {
-  border-color: var(--border);
+  border-color: hsl(var(--border));
 }
 
-/* Remove the outer table border */
 .fc .fc-scrollgrid {
-  border-color: var(--border);
+  border-color: hsl(var(--border));
 }
 
 .fc .fc-scrollgrid-sync-table {
-  border-color: var(--border);
+  border-color: hsl(var(--border));
 }
 
-/* Today column highlight */
 .fc .fc-day-today {
-  background: color-mix(in srgb, var(--primary) 4%, transparent) !important;
+  background: color-mix(in srgb, hsl(var(--primary)) 4%, transparent) !important;
 }
 
-/* Smooth resize cursor */
 .fc .fc-event-resizer {
   cursor: ns-resize;
 }

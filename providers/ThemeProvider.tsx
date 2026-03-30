@@ -17,7 +17,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const host = window.location.hostname;
     const parts = host.split('.');
-    // e.g. demo.localhost or demo.clinic.com
     const subdomain = parts.length > 1 && parts[0] !== 'localhost' ? parts[0] : 'demo';
 
     const api = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
@@ -29,8 +28,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         applyTheme(t);
       })
       .catch(() => {
-        // Apply default theme on failure
-        applyDefaultTheme();
+        // Default theme is handled by globals.css — no action required
       })
       .finally(() => setIsLoading(false));
   }, []);
@@ -38,44 +36,116 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return <ThemeContext.Provider value={{ tenant, isLoading }}>{children}</ThemeContext.Provider>;
 }
 
+/**
+ * Injects a <style id="tenant-theme"> block that overrides CSS variables
+ * for both :root (light) and .dark modes.
+ *
+ * Variables must be raw HSL channels (e.g. "221 83% 53%") to be consistent
+ * with globals.css which wraps them as hsl(var(--primary)) etc.
+ */
 function applyTheme(t: Tenant) {
-  const root = document.documentElement;
-  
-  if (t.primary_color) {
-    const { h, s, l } = hexToHsl(t.primary_color);
-    root.style.setProperty('--primary', `hsl(${h} ${s}% ${l}%)`);
-    // Ensure primary-foreground is legible
-    root.style.setProperty('--primary-foreground', l > 65 ? 'hsl(222.2 47.4% 11.2%)' : 'hsl(0 0% 100%)');
-    root.style.setProperty('--ring', `hsl(${h} ${s}% ${l}%)`);
+  if (!t) return;
+
+  let cssText = '';
+
+  /**
+   * Selection of foreground color based on WCAG luminance guidelines.
+   * Returns a dark slate for light backgrounds and near-white for dark ones.
+   */
+  const getContrastForeground = (h: number, s: number, l: number) => {
+    // For primary/accent colors, we want high contrast.
+    // l > 65% is a good threshold for switching to dark text.
+    return l > 65 ? '222.2 47.4% 11.2%' : '210 40% 98%';
+  };
+
+  /**
+   * Safe dark-mode lightness: ensures primary colors stay vibrant but
+   * have sufficient contrast against dark backgrounds.
+   */
+  const getDarkPrimaryLightness = (l: number) => {
+    // Aim for 50-70% lightness in dark mode for better visibility.
+    return Math.max(50, Math.min(l + 15, 75));
+  };
+
+  const hasBranding = t.primary_color || t.secondary_color || t.border_radius;
+
+  if (hasBranding) {
+    // Light mode overrides
+    cssText += ':root {\n';
+    if (t.primary_color) {
+      const { h, s, l } = hexToHsl(t.primary_color);
+      cssText += `  --primary: ${h} ${s}% ${l}%;\n`;
+      cssText += `  --primary-foreground: ${getContrastForeground(h, s, l)};\n`;
+      cssText += `  --ring: ${h} ${s}% ${l}%;\n`;
+    }
+    if (t.secondary_color) {
+      const { h, s, l } = hexToHsl(t.secondary_color);
+      cssText += `  --secondary: ${h} ${s}% ${l}%;\n`;
+      cssText += `  --secondary-foreground: ${getContrastForeground(h, s, l)};\n`;
+    }
+    if (t.border_radius) {
+      cssText += `  --radius: ${t.border_radius};\n`;
+    }
+    cssText += '}\n';
+
+    // Dark mode overrides
+    cssText += '.dark {\n';
+    if (t.primary_color) {
+      const { h, s, l } = hexToHsl(t.primary_color);
+      const darkL = getDarkPrimaryLightness(l);
+      cssText += `  --primary: ${h} ${s}% ${darkL}%;\n`;
+      cssText += `  --primary-foreground: ${getContrastForeground(h, s, darkL)};\n`;
+      cssText += `  --ring: ${h} ${s}% ${darkL}%;\n`;
+    }
+    if (t.secondary_color) {
+      const { h, s, l } = hexToHsl(t.secondary_color);
+      const darkL = Math.max(30, Math.min(l, 45)); // Secondary slightly deeper in dark mode
+      cssText += `  --secondary: ${h} ${s}% ${darkL}%;\n`;
+      cssText += `  --secondary-foreground: ${getContrastForeground(h, s, darkL)};\n`;
+    }
+    cssText += '}\n';
   }
 
-  if (t.secondary_color) {
-    const { h, s, l } = hexToHsl(t.secondary_color);
-    root.style.setProperty('--secondary', `hsl(${h} ${s}% ${l}%)`);
-    root.style.setProperty('--secondary-foreground', l > 65 ? 'hsl(222.2 47.4% 11.2%)' : 'hsl(0 0% 100%)');
+  let styleEl = document.getElementById('tenant-theme');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'tenant-theme';
+    document.head.appendChild(styleEl);
   }
+  styleEl.innerHTML = cssText;
 
-  if (t.border_radius) {
-    root.style.setProperty('--radius', t.border_radius);
-  }
-
+  // Font override
   if (t.font_family) {
-    root.style.setProperty('--font-sans', `"${t.font_family}", system-ui, sans-serif`);
-    const link = document.createElement('link');
+    document.documentElement.style.setProperty(
+      '--font-sans',
+      `"${t.font_family}", system-ui, sans-serif`
+    );
+    const linkId = 'tenant-font';
+    let link = document.getElementById(linkId) as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
     link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(t.font_family)}:wght@400;500;600;700&display=swap`;
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
   }
-}
-
-function applyDefaultTheme() {
-  // Let globals.css handle defaults
 }
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  if (!/^#([0-9A-Fa-f]{3}){1,2}$/.test(hex)) {
+    return { h: 221, s: 83, l: 53 };
+  }
+  let r = 0, g = 0, b = 0;
+  if (hex.length === 4) {
+    r = parseInt(hex[1] + hex[1], 16) / 255;
+    g = parseInt(hex[2] + hex[2], 16) / 255;
+    b = parseInt(hex[3] + hex[3], 16) / 255;
+  } else {
+    r = parseInt(hex.slice(1, 3), 16) / 255;
+    g = parseInt(hex.slice(3, 5), 16) / 255;
+    b = parseInt(hex.slice(5, 7), 16) / 255;
+  }
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
   let h = 0, s = 0;
   const l = (max + min) / 2;

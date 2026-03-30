@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
 import { usePatientAttachments, useDeleteAttachment } from '../hooks/useAttachments';
 import type { Attachment } from '../types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -7,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Eye, Trash2, FileText, FileImage } from 'lucide-react';
 import { AttachmentPreviewDialog } from './AttachmentPreviewDialog';
 import { useAuthStore } from '@/hooks/useAuthStore';
+import { formatClinicDate } from '@/lib/formatters';
+import { useTheme } from '@/providers/ThemeProvider';
 
 interface Props {
   patientId: string;
@@ -16,6 +17,7 @@ export function AttachmentList({ patientId }: Props) {
   const { data: attachments, isLoading } = usePatientAttachments(patientId);
   const { mutate: deleteAttachment } = useDeleteAttachment(patientId);
   const user = useAuthStore((s) => s.user);
+  const { tenant } = useTheme();
   const [previewAtt, setPreviewAtt] = useState<Attachment | null>(null);
 
   if (isLoading) {
@@ -55,7 +57,7 @@ export function AttachmentList({ patientId }: Props) {
             <div>
               <p className="text-sm font-medium line-clamp-1">{att.name}</p>
               <div className="text-xs text-muted-foreground flex gap-2 mt-1">
-                <span>{format(new Date(att.created_at), 'MMM d, yyyy')}</span>
+                <span>{formatClinicDate(att.created_at, tenant?.timezone)}</span>
                 <span>•</span>
                 <span>{(att.file_size / 1024 / 1024).toFixed(2)} MB</span>
               </div>

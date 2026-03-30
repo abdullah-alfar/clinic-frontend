@@ -20,6 +20,7 @@ export interface Tenant {
   secondary_color: string;
   border_radius: string;
   font_family: string;
+  timezone?: string;
 }
 
 export interface Patient {

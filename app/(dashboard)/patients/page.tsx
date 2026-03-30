@@ -15,7 +15,9 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Search, Pencil, Trash2, User } from 'lucide-react';
-import { format } from 'date-fns';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { formatClinicDate } from '@/lib/formatters';
+import { useTheme } from '@/providers/ThemeProvider';
 import type { Patient } from '@/types';
 
 const schema = z.object({
@@ -32,6 +34,7 @@ type PatientForm = z.infer<typeof schema>;
 export default function PatientsPage() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
+  const { tenant } = useTheme();
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
@@ -85,11 +88,7 @@ export default function PatientsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Patients</h1>
-          <p className="text-muted-foreground text-sm">Manage your clinic's patient records</p>
-        </div>
+      <PageHeader title="Patients" description="Manage your clinic's patient records">
         <Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" />New Patient</Button>
         
         {/* Create Modal */}
@@ -177,7 +176,7 @@ export default function PatientsPage() {
           variant="destructive"
           isPending={deleteMut.isPending}
         />
-      </div>
+      </PageHeader>
 
       {/* Search */}
       <div className="relative max-w-sm">
@@ -220,7 +219,7 @@ export default function PatientsPage() {
                  <TableCell className="text-muted-foreground">{p.email || '—'}</TableCell>
                  <TableCell className="text-muted-foreground">{p.phone || '—'}</TableCell>
                  <TableCell className="capitalize">{p.gender || '—'}</TableCell>
-                 <TableCell className="text-muted-foreground">{format(new Date(p.created_at), 'MMM d, yyyy')}</TableCell>
+                 <TableCell className="text-muted-foreground">{formatClinicDate(p.created_at, tenant?.timezone)}</TableCell>
                  <TableCell className="text-right">
                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(p)}>
