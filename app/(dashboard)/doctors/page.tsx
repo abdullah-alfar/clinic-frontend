@@ -15,7 +15,8 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Stethoscope, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Stethoscope, Pencil, Trash2, CalendarDays } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import type { Doctor } from '@/types';
 
 const schema = z.object({
@@ -26,6 +27,7 @@ const schema = z.object({
 type DoctorForm = z.infer<typeof schema>;
 
 export default function DoctorsPage() {
+  const router = useRouter();
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === 'admin';
@@ -178,10 +180,13 @@ export default function DoctorsPage() {
                 {isAdmin && (
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEdit(d)}>
+                      <Button variant="ghost" size="icon" title="Manage Availability" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => router.push(`/doctors/${d.id}/availability`)}>
+                        <CalendarDays className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" title="Edit Doctor" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEdit(d)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeletingDoctor(d)}>
+                      <Button variant="ghost" size="icon" title="Delete Doctor" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeletingDoctor(d)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
