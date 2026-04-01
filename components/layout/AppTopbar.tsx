@@ -20,6 +20,7 @@ import { formatClinicDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
+import { GlobalSearch } from '@/features/search/components/GlobalSearch';
 
 export function AppTopbar() {
   const router = useRouter();
@@ -47,25 +48,7 @@ export function AppTopbar() {
     <header className="sticky top-0 z-40 flex h-20 items-center justify-between border-b border-border/60 bg-background/80 backdrop-blur-xl px-6 lg:px-8 transition-all duration-300">
       {/* Search Bar Area */}
       <div className="flex-1 max-w-xl pr-8">
-        <div className={cn(
-          "relative group transition-all duration-300",
-          searchFocused ? "max-w-md" : "max-w-[280px]"
-        )}>
-          <Search className={cn(
-            "absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors",
-            searchFocused ? "text-primary" : "text-muted-foreground"
-          )} />
-          <Input 
-            placeholder="Quick search (⌘K)..."
-            className="pl-11 pr-10 h-10 bg-muted/40 border-none rounded-2xl focus-visible:ring-2 focus-visible:ring-primary/20 transition-all text-sm font-medium"
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-          />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-40">
-             <kbd className="h-5 px-1.5 rounded bg-muted-foreground/20 text-[10px] flex items-center justify-center font-sans tracking-widest font-bold text-muted-foreground">⌘</kbd>
-             <kbd className="h-5 px-1.5 rounded bg-muted-foreground/20 text-[10px] flex items-center justify-center font-sans font-bold text-muted-foreground">K</kbd>
-          </div>
-        </div>
+        <GlobalSearch />
       </div>
 
       <div className="flex items-center gap-4">

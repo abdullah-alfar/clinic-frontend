@@ -200,6 +200,24 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 #### Frontend:
 - `AppTopbar` dropdown
 - `/notifications`
+---
+
+### 🔍 Global Search System
+
+#### Features:
+- **Intelligent Search**: Quick command-style search (Cmd+K) in the top navigation bar.
+- **Debounced Input**: Real-time querying with optimized 300ms debounce to prevent API spam.
+- **Tenant-Aware**: Secure, partitioned search filtering only within the current tenant's database context.
+- **Modular Providers**: Architecture designed to easily scale from Patients to Doctors, Invoices, and unstructured AI Memory in the future.
+- **PostgreSQL Optimization**: Utilizes `ILIKE` operators and leverages potential index strategies securely.
+
+#### Related API:
+- `GET /api/v1/search?q={query}`
+
+#### Frontend:
+- `AppTopbar` (Search Integration)
+- `features/search/components/GlobalSearch`
+- `features/search/hooks/useSearch` (TanStack Query)
 
 ---
 
