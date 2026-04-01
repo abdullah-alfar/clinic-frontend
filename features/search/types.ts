@@ -1,13 +1,21 @@
-export interface PatientSearchResult {
+export interface SearchResultItem {
   id: string;
-  first_name: string;
-  last_name: string;
-  phone?: string;
-  email?: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  url: string;
+  score: number;
+  metadata: Record<string, any>;
+}
+
+export interface SearchResultGroup {
+  type: string;
+  label: string;
+  count: number;
+  results: SearchResultItem[];
 }
 
 export interface SearchData {
-  patients: PatientSearchResult[];
-  doctors: any[];
-  reports: any[];
+  query: string;
+  groups: SearchResultGroup[];
 }

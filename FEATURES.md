@@ -202,22 +202,36 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - `/notifications`
 ---
 
-### 🔍 Global Search System
+---
+
+### 🔍 Unified Global Search Platform
 
 #### Features:
-- **Intelligent Search**: Quick command-style search (Cmd+K) in the top navigation bar.
-- **Debounced Input**: Real-time querying with optimized 300ms debounce to prevent API spam.
-- **Tenant-Aware**: Secure, partitioned search filtering only within the current tenant's database context.
-- **Modular Providers**: Architecture designed to easily scale from Patients to Doctors, Invoices, and unstructured AI Memory in the future.
-- **PostgreSQL Optimization**: Utilizes `ILIKE` operators and leverages potential index strategies securely.
+- **Universal Discovery**: One-stop search across Patients, Doctors, Appointments, Billing, Reports, Medical Notes, Notifications, AI Memory, and Audit Logs.
+- **Command-Center UI**: Instant keyboard access (`Cmd+K`) from any screen with a grouped, categorized results dropdown.
+- **Dedicated Search Engine Page**: Full-screen results view at `/search` for deep exploration of matches across the entire clinic ecosystem.
+- **Intelligent Ranking**: Proprietary scoring algorithm that weights exact matches, title prefixes, and relevant metadata to ensure the most useful results appear first.
+- **Tenant-Safe Architecture**: Strict data partitioning ensures a clinic only ever sees its own records, enforced at the provider level.
+- **Scalable Provider Pattern**: Plugin-based backend architecture allows new system modules to register for search in minutes without modifying core logic.
+
+#### Searchable Content:
+- **Patients**: First name, last name, phone, email.
+- **Doctors**: Full name, specialty, license number.
+- **Appointments**: Patient name, doctor name, status, reason, notes.
+- **Billing**: Invoice status, amount, patient name.
+- **Reports**: Filename, mime type, associated patient.
+- **Medical Notes**: Diagnoses, prescriptions, clinical notes.
+- **AI Memory**: Summaries of medical insights and automated report analyses.
+- **Notifications**: Title, message content, type, status.
+- **Audit Logs**: Actions, entity types, per-user activity history.
 
 #### Related API:
-- `GET /api/v1/search?q={query}`
+- `GET /api/v1/search?q={query}&types={optional_csv}`
 
 #### Frontend:
-- `AppTopbar` (Search Integration)
-- `features/search/components/GlobalSearch`
-- `features/search/hooks/useSearch` (TanStack Query)
+- `features/search/components/GlobalSearch` (Topbar integration)
+- `app/(dashboard)/search/page.tsx` (Deep-dive results page)
+- `features/search/hooks/useSearch` (High-performance TanStack query integration)
 
 ---
 
