@@ -11,10 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Slot } from '@/types';
 import { useCreateAppointment, extractApiError } from '@/hooks/useCreateAppointment';
 import { useRescheduleAppointment } from '@/hooks/useRescheduleAppointment';
-import { format } from 'date-fns';
+import { useSmartSuggestions, useCreateRecurrence } from '@/features/appointments/hooks/useScheduling';
+import { SmartSuggestions } from '@/features/appointments/components/SmartSuggestions';
+import { RecurrenceSelector } from '@/features/appointments/components/RecurrenceSelector';
+import { RecurrenceFrequency, SlotSuggestion, Slot } from '@/types';
+import { format, addMonths } from 'date-fns';
 
 interface Props {
   /** When provided the patient selector is hidden (patient page flow). */
@@ -32,13 +35,25 @@ export function BookingModal({ patientId, open, onOpenChange, appointmentToResch
   const [doctorId, setDoctorId] = useState<string>(appointmentToReschedule?.doctor_id || 'any');
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedSlot, setSelectedSlot] = useState<{ slot: Slot; doctor_id: string } | null>(null);
+  const [recurrence, setRecurrence] = useState<RecurrenceFrequency | 'none'>('none');
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState<Date | undefined>();
   const [reason, setReason] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const { mutateAsync: createAppointment, isPending: isCreating } = useCreateAppointment();
+  const { mutateAsync: createRecurrence, isPending: isCreatingRecurrence } = useCreateRecurrence();
   const { mutateAsync: rescheduleAppointment, isPending: isRescheduling } = useRescheduleAppointment();
-  const isPending = isCreating || isRescheduling;
+  
+  const { data: suggestions, isFetching: isFetchingSuggestions } = useSmartSuggestions({
+    patient_id: patientId || selectedPatientId,
+    doctor_id: doctorId === 'any' ? undefined : doctorId,
+    date_from: format(date || new Date(), 'yyyy-MM-dd'),
+    date_to: format(addMonths(date || new Date(), 1), 'yyyy-MM-dd'),
+    strategy: 'fastest',
+  });
+
+  const isPending = isCreating || isRescheduling || isCreatingRecurrence;
 
   useEffect(() => {
     if (open) {
@@ -87,6 +102,24 @@ export function BookingModal({ patientId, open, onOpenChange, appointmentToResch
           }
         });
         setSuccessMsg('Appointment rescheduled successfully!');
+      } else if (recurrence !== 'none' && recurrenceEndDate) {
+        const start = typeof selectedSlot.slot.start_time === 'string' ? new Date(selectedSlot.slot.start_time) : selectedSlot.slot.start_time;
+        const end = typeof selectedSlot.slot.end_time === 'string' ? new Date(selectedSlot.slot.end_time) : selectedSlot.slot.end_time;
+        
+        await createRecurrence({
+          patient_id: resolvedPatientId,
+          doctor_id: selectedSlot.doctor_id,
+          frequency: recurrence,
+          interval: 1,
+          day_of_week: recurrence === 'weekly' ? start.getDay() : undefined,
+          day_of_month: recurrence === 'monthly' ? start.getDate() : undefined,
+          start_time: format(start, 'HH:mm:ss'),
+          end_time: format(end, 'HH:mm:ss'),
+          start_date: format(start, 'yyyy-MM-dd'),
+          end_date: format(recurrenceEndDate, 'yyyy-MM-dd'),
+          reason,
+        });
+        setSuccessMsg('Recurring appointments scheduled successfully!');
       } else {
         await createAppointment({
           patient_id: resolvedPatientId,
@@ -108,6 +141,19 @@ export function BookingModal({ patientId, open, onOpenChange, appointmentToResch
       setErrorMsg(msg);
       setSelectedSlot(null);
     }
+  };
+
+  const handleSuggestionSelect = (suggestion: SlotSuggestion) => {
+    setDoctorId(suggestion.doctor_id);
+    setDate(new Date(suggestion.start_time));
+    setSelectedSlot({
+      doctor_id: suggestion.doctor_id,
+      slot: {
+        start_time: suggestion.start_time,
+        end_time: suggestion.end_time,
+        status: 'available',
+      }
+    });
   };
 
   const handleSlotSelect = useCallback((slot: Slot, docId: string) => {
@@ -167,6 +213,17 @@ export function BookingModal({ patientId, open, onOpenChange, appointmentToResch
             </div>
           )}
 
+          {/* Smart Suggestions */}
+          {!appointmentToReschedule && suggestions && suggestions.length > 0 && (
+            <div className="pt-2 border-t border-border/50">
+              <SmartSuggestions
+                suggestions={suggestions}
+                onSelect={handleSuggestionSelect}
+                isLoading={isFetchingSuggestions}
+              />
+            </div>
+          )}
+
           {/* Doctor + Date selectors */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -182,6 +239,19 @@ export function BookingModal({ patientId, open, onOpenChange, appointmentToResch
               />
             </div>
           </div>
+
+          {/* Recurrence Options */}
+          {!appointmentToReschedule && (
+            <div className="pt-3 border-t border-border/50">
+              <RecurrenceSelector
+                frequency={recurrence}
+                setFrequency={setRecurrence}
+                endDate={recurrenceEndDate}
+                setEndDate={setRecurrenceEndDate}
+                startDate={date || new Date()}
+              />
+            </div>
+          )}
 
           {/* Availability slots */}
           <div className="space-y-3 bg-muted/20 p-4 border border-border/50 rounded-lg">

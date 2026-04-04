@@ -115,6 +115,57 @@ export interface Slot {
   status: SlotStatus;
 }
 
+export interface SlotSuggestion {
+  doctor_id: string;
+  doctor_name: string;
+  start_time: string;
+  end_time: string;
+  score: number;
+  reason: string;
+}
+
+export interface SuggestionResponse {
+  data: SlotSuggestion[];
+  message: string;
+  error: string | null;
+}
+
+export type RecurrenceFrequency = 'weekly' | 'monthly';
+export type RecurrenceStatus = 'active' | 'completed' | 'cancelled';
+
+export interface RecurrenceRule {
+  id: string;
+  tenant_id: string;
+  patient_id: string;
+  doctor_id: string;
+  frequency: RecurrenceFrequency;
+  interval: number;
+  day_of_week?: number;
+  day_of_month?: number;
+  start_time: string;
+  end_time: string;
+  start_date: string;
+  end_date: string;
+  reason: string;
+  status: RecurrenceStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateRecurrenceRequest {
+  patient_id: string;
+  doctor_id: string;
+  frequency: RecurrenceFrequency;
+  interval: number;
+  day_of_week?: number;
+  day_of_month?: number;
+  start_time: string;
+  end_time: string;
+  start_date: string;
+  end_date: string;
+  reason: string;
+}
+
 export interface DoctorAvailabilityResponse {
   doctor_id: string;
   doctor_name: string;

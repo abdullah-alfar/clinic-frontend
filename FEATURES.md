@@ -25,6 +25,8 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - **Notification & Messaging Platform**
 - **WhatsApp Bot (Self-Service)**
 - **Advanced Doctor Availability**
+- **Smart Scheduling & Recommendations**
+- **Recurring Appointments**
 
 ---
 
@@ -102,6 +104,41 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 #### Frontend:
 - `BookingModal` (Unified scheduling UI)
 - `AvailabilitySelector` (Visual slot picking)
+
+---
+
+### 🧠 Smart Scheduling & Recommendations
+
+#### Features:
+- **Intelligent Ranking**: AI-ready ranking of available slots based on strategies (`Fastest`, `Best-Fit`).
+- **Gap Minimization**: Suggestions optimized for schedule density to reduce idle time for doctors.
+- **Context-Aware Suggestions**: Recommendations based on patient history and doctor workload.
+- **Visual Highlighting**: "Best Fit" badges in the booking flow for quick selection.
+
+#### Related API:
+- `GET /api/v1/appointments/smart-suggestions`
+
+#### Frontend:
+- `SmartSuggestions` component (Integrated in `BookingModal`)
+- `useSmartSuggestions` hook
+
+---
+
+### 🔁 Recurring Appointments
+
+#### Features:
+- **Flexible Recurrence Patterns**: Support for Weekly and Monthly recurring appointments.
+- **Strict Validation**: Every generated occurrence is validated against doctor availability, shifts, breaks, and existing conflicts.
+- **Configurable Limits**: Safe 1-year maximum limit for recurrence to prevent infinite data generation.
+- **Status Tracking**: Link appointments to a parent `Recurrence Rule` for synchronized management.
+
+#### Related API:
+- `POST /api/v1/appointments/recurring`
+- `GET /api/v1/appointments/recurring`
+
+#### Frontend:
+- `RecurrenceSelector` (Integrated in `BookingModal`)
+- `useCreateRecurrence` hook
 
 ---
 
