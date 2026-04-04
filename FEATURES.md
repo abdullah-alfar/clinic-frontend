@@ -22,7 +22,8 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - **Billing & Invoices**
 - **Attachment Management**
 - **AI Report Analysis**
-- **Notification System**
+- **Notification & Messaging Platform**
+- **WhatsApp Bot (Self-Service)**
 - **Advanced Doctor Availability**
 
 ---
@@ -186,20 +187,45 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 
 ---
 
-### 🔔 Notification System
+### 🔔 Notification System & Patient Messaging
 
 #### Features:
-- **System Alerts**: Real-time listing of important clinic events and reminders.
-- **Unread Indicators**: Visual tracking of new notifications.
-- **History Feed**: Searchable history of past alerts.
+- **System Alerts**: Real-time listing of important clinic events and reminders for clinic staff.
+- **Unread Indicators**: Visual tracking of new notifications in the dashboard.
+- **Multi-Channel Dispatcher**: Modular abstraction for patient-facing events routed via Email or WhatsApp.
+- **Automated Triggers**: Booking confirmations, 24-hr reminders, and cancellations dispatched automatically via background workers.
+- **Fine-Grained Preferences**: Granular opt-in/opt-out per patient for specific event messaging types across different channels.
+- **Delivery History**: Unified chronological UI of all outbound messages sent to a patient, including their delivery statuses.
 
 #### Related API:
 - `GET /api/v1/notifications`
 - `PATCH /api/v1/notifications/{id}/read`
+- `GET /api/v1/patients/{id}/notifications`
+- `GET /api/v1/patients/{id}/notification-preferences`
+- `PUT /api/v1/patients/{id}/notification-preferences`
 
 #### Frontend:
 - `AppTopbar` dropdown
 - `/notifications`
+- `Patient Communications` tab inside Patient detail view
+
+---
+
+### 🤖 WhatsApp Bot (Self-Service)
+
+#### Features:
+- **Stateful Conversational Engine**: Session-based router handling multi-step patient intents over WhatsApp.
+- **Webhook Integration**: Secure inbound webhook receiver for parsing external messaging provider payloads (e.g., Meta, Twilio).
+- **Patient Verification**: E.164 phone number normalization for automatic profile linking with inbound messages.
+- **Self-Service Actions**: AI-ready routing for appointment inquiries, cancellation requests, and report retrievals.
+
+#### Related API:
+- `POST /webhooks/whatsapp`
+
+#### Architecture:
+- `whatsappbot` internal module with session tracking in PostgreSQL (JSONB state).
+- Decoupled `whatsapp.Sender` interface for easy provider swapping.
+
 ---
 
 ---

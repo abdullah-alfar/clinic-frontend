@@ -25,6 +25,9 @@ import { AddNoteModal } from '@/components/patients/AddNoteModal';
 import { PatientInvoices } from '@/components/invoices/PatientInvoices';
 import { AttachmentList } from '@/features/attachments/components/AttachmentList';
 import { AttachmentUploader } from '@/features/attachments/components/AttachmentUploader';
+import { ContactChannelReadiness } from '@/features/notifications/components/ContactChannelReadiness';
+import { NotificationHistoryList } from '@/features/notifications/components/NotificationHistoryList';
+import { NotificationPreferencesForm } from '@/features/notifications/components/NotificationPreferencesForm';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SectionCard } from '@/components/layout/SectionCard';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -162,7 +165,7 @@ export default function PatientDetailPage(props: { params: Promise<{ id: string 
       <Tabs defaultValue="overview" className="space-y-6">
         <div className="flex items-center justify-between border-b border-border/40 pb-1">
           <TabsList className="bg-transparent border-none gap-6 h-auto p-0">
-            {['overview', 'appointments', 'billing', 'reports', 'notes'].map((tab) => (
+            {['overview', 'appointments', 'billing', 'reports', 'notes', 'communications'].map((tab) => (
               <TabsTrigger 
                 key={tab}
                 value={tab} 
@@ -339,6 +342,18 @@ export default function PatientDetailPage(props: { params: Promise<{ id: string 
               </div>
             )}
           </SectionCard>
+        </TabsContent>
+
+        <TabsContent value="communications" className="focus-visible:outline-none focus-visible:ring-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1 space-y-6">
+              <ContactChannelReadiness patient={patient} />
+              <NotificationPreferencesForm patientId={params.id} />
+            </div>
+            <div className="md:col-span-2">
+              <NotificationHistoryList patientId={params.id} />
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
