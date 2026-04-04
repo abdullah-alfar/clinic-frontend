@@ -94,10 +94,12 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - **Conflict Prevention**: Real-time checking of double-bookings and doctor availability.
 - **Rescheduling Engine**: Flexible rescheduling with state mutation rules (Scheduled -> Confirmed -> Completed).
 - **Next Available Search**: Automated discovery of the earliest possible appointment opening.
+- **No-show Tracking**: Mark appointments as 'no_show' from scheduled or confirmed states with automatic dashboard metric updates.
 
 #### Related API:
 - `POST /api/v1/appointments`
 - `PATCH /api/v1/appointments/{id}/reschedule`
+- `PATCH /api/v1/appointments/{id}/no-show`
 - `GET /api/v1/appointments/availability`
 - `GET /api/v1/appointments/next-available`
 

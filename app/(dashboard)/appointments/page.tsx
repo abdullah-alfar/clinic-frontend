@@ -10,8 +10,9 @@ import { useAuthStore } from '@/hooks/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, CheckCircle, XCircle, CalendarCheck, CalendarDays, RefreshCw } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, CalendarCheck, CalendarDays, RefreshCw, UserX } from 'lucide-react';
 import { BookingModal } from '@/components/appointments/BookingModal';
+import { useMarkAppointmentNoShow } from '@/features/appointments/hooks/useMarkAppointmentNoShow';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { formatClinicDate, formatClinicTime } from '@/lib/formatters';
@@ -49,10 +50,18 @@ export default function AppointmentsPage() {
   const confirmMut = useMutation({ mutationFn: confirmAppointment, onSuccess: invalidate, onError: handleError });
   const cancelMut = useMutation({ mutationFn: cancelAppointment, onSuccess: invalidate, onError: handleError });
   const completeMut = useMutation({ mutationFn: completeAppointment, onSuccess: invalidate, onError: handleError });
+  const noShowMut = useMarkAppointmentNoShow();
+
+  const handleNoShow = (id: string) => {
+    noShowMut.mutate(id, {
+      onSuccess: () => invalidate(),
+    });
+  };
 
   const canConfirm = user?.role === 'admin' || user?.role === 'doctor';
   const canCancel = user?.role === 'admin' || user?.role === 'receptionist';
   const canCreate = user?.role === 'admin' || user?.role === 'receptionist';
+  const canMarkNoShow = user?.role === 'admin' || user?.role === 'receptionist' || user?.role === 'doctor';
 
   return (
     <div className="space-y-6">
@@ -169,6 +178,11 @@ export default function AppointmentsPage() {
                       {(a.status === 'scheduled' || a.status === 'confirmed') && canCreate && (
                         <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setRescheduleData({ id: a.id, doctor_id: a.doctor_id, patient_id: a.patient_id })}>
                           <RefreshCw className="h-3 w-3" />Reschedule
+                        </Button>
+                      )}
+                      {(a.status === 'scheduled' || a.status === 'confirmed') && canMarkNoShow && (
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-purple-600 border-purple-200 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-900 dark:hover:bg-purple-950" onClick={() => handleNoShow(a.id)}>
+                          <UserX className="h-3 w-3" />No-show
                         </Button>
                       )}
                     </div>

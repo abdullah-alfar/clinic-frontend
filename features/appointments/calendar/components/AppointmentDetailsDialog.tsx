@@ -20,8 +20,9 @@ import {
   cancelAppointment,
   completeAppointment,
 } from '@/lib/api/appointments';
+import { useMarkAppointmentNoShow } from '@/features/appointments/hooks/useMarkAppointmentNoShow';
 import { useAuthStore } from '@/hooks/useAuthStore';
-import { CalendarDays, Clock, User, Stethoscope, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { CalendarDays, Clock, User, Stethoscope, FileText, CheckCircle, XCircle, UserX } from 'lucide-react';
 import type { CalendarAppointment } from '../types';
 import type { AppointmentStatus } from '@/types';
 
@@ -30,6 +31,7 @@ const STATUS_BADGE: Record<AppointmentStatus, 'outline' | 'secondary' | 'default
   confirmed: 'secondary',
   completed: 'default',
   canceled: 'destructive',
+  no_show: 'outline',
 };
 
 interface AppointmentDetailsDialogProps {
@@ -84,12 +86,24 @@ export function AppointmentDetailsDialog({
     onError: (e) => handleError(e, 'complete'),
   });
 
+  const noShowMut = useMarkAppointmentNoShow();
+
+  const handleNoShow = () => {
+    noShowMut.mutate(appointment.id, {
+      onSuccess: () => {
+        invalidate();
+      }
+    });
+  };
+
   if (!appointment) return null;
 
   const canConfirm = user?.role === 'admin' || user?.role === 'doctor';
   const canCancel = user?.role === 'admin' || user?.role === 'receptionist';
+  const canMarkNoShow = user?.role === 'admin' || user?.role === 'receptionist' || user?.role === 'doctor';
+
   const isPending =
-    confirmMut.isPending || cancelMut.isPending || completeMut.isPending;
+    confirmMut.isPending || cancelMut.isPending || completeMut.isPending || noShowMut.isPending;
 
 
 
@@ -198,6 +212,19 @@ export function AppointmentDetailsDialog({
             >
               <XCircle className="h-3.5 w-3.5" />
               Cancel
+            </Button>
+          )}
+
+          {(appointment.status === 'scheduled' || appointment.status === 'confirmed') && canMarkNoShow && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1 text-purple-600 border-purple-300 hover:bg-purple-50"
+              disabled={isPending}
+              onClick={handleNoShow}
+            >
+              <UserX className="h-3.5 w-3.5" />
+              No-show
             </Button>
           )}
         </div>

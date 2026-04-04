@@ -18,6 +18,7 @@ const STATUS_CONFIG: Record<string, { color: string; label: string }> = {
   unread: { color: 'hsl(var(--primary))', label: 'Unread' },
   available: { color: 'hsl(var(--primary))', label: 'Available' },
   booked: { color: 'hsl(var(--destructive))', label: 'Booked' },
+  no_show: { color: 'rgb(168 85 247)', label: 'No-show' },
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {

@@ -30,6 +30,12 @@ const STATUS_STYLES: Record<
     text: 'text-rose-800 dark:text-rose-200',
     dot: 'bg-rose-400',
   },
+  no_show: {
+    border: 'border-purple-400',
+    bg: 'bg-purple-50 dark:bg-purple-950/40',
+    text: 'text-purple-900 dark:text-purple-100',
+    dot: 'bg-purple-400',
+  },
 };
 
 interface AppointmentEventCardProps {

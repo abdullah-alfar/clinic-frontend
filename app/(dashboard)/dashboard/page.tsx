@@ -11,6 +11,7 @@ import {
   CalendarCheck, 
   CheckCircle, 
   XCircle, 
+  UserX,
   Clock, 
   Bell, 
   TrendingUp, 
@@ -51,6 +52,7 @@ export default function DashboardPage() {
   const metrics = [
     { label: 'Total Patients', value: summary?.total_patients, icon: Users, trend: '+12%', color: 'text-blue-500', bg: 'bg-blue-500/10' },
     { label: 'Today Appointments', value: summary?.appointments_today, icon: CalendarCheck, trend: '+5', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { label: 'No-shows', value: summary?.no_show_count, icon: UserX, trend: 'Tracked', color: 'text-purple-500', bg: 'bg-purple-500/10' },
     { label: 'Pending Reviews', value: '14', icon: Activity, trend: 'High', color: 'text-amber-500', bg: 'bg-amber-500/10' },
     { label: 'Monthly Revenue', value: '$12.4k', icon: DollarSign, trend: '+8%', color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
   ];
@@ -73,7 +75,7 @@ export default function DashboardPage() {
       </PageHeader>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         {metrics.map((m) => (
           <div key={m.label} className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
             <div className={cn("absolute -right-4 -top-4 h-24 w-24 rounded-full opacity-10 transition-transform group-hover:scale-110", m.bg)} />

@@ -48,7 +48,7 @@ export interface Doctor {
   updated_at: string;
 }
 
-export type AppointmentStatus = 'scheduled' | 'confirmed' | 'completed' | 'canceled';
+export type AppointmentStatus = 'scheduled' | 'confirmed' | 'completed' | 'canceled' | 'no_show';
 
 export interface Appointment {
   id: string;
@@ -91,6 +91,7 @@ export interface DashboardSummary {
   upcoming_appointments: number;
   completed_appointments: number;
   canceled_appointments: number;
+  no_show_count: number;
 }
 
 export interface ApiResponse<T> {
