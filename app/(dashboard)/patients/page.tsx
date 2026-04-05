@@ -159,6 +159,20 @@ export default function PatientsPage() {
             <Input id="edit_phone" {...register('phone')} />
           </div>
           <div className="grid gap-2">
+            <Label htmlFor="edit_gender">Gender</Label>
+            <select
+              id="edit_gender"
+              {...register('gender')}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+            >
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+            {errors.gender && <p className="text-xs text-destructive">{errors.gender.message}</p>}
+          </div>
+          <div className="grid gap-2">
             <Label htmlFor="edit_date_of_birth">Date of Birth</Label>
             <Input id="edit_date_of_birth" {...register('date_of_birth')} type="date" />
           </div>
