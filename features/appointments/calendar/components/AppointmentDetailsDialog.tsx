@@ -89,6 +89,7 @@ export function AppointmentDetailsDialog({
   const noShowMut = useMarkAppointmentNoShow();
 
   const handleNoShow = () => {
+    if (!appointment) return;
     noShowMut.mutate(appointment.id, {
       onSuccess: () => {
         invalidate();
@@ -115,13 +116,15 @@ export function AppointmentDetailsDialog({
             <CalendarDays className="h-4 w-4 text-primary" />
             Appointment Details
           </DialogTitle>
-          <DialogDescription>
-            <Badge
-              variant={STATUS_BADGE[appointment.status]}
-              className="capitalize mt-1"
-            >
-              {appointment.status}
-            </Badge>
+          <DialogDescription asChild>
+            <div>
+              <Badge
+                variant={STATUS_BADGE[appointment.status]}
+                className="capitalize mt-1"
+              >
+                {appointment.status}
+              </Badge>
+            </div>
           </DialogDescription>
         </DialogHeader>
 

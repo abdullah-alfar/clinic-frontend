@@ -32,23 +32,33 @@ export function ExceptionsEditor({ doctorId, exceptions }: Props) {
   const [open, setOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // Toasts (success / error) are fired inside the hooks.
   const createMut = useCreateException(doctorId);
   const deleteMut = useDeleteException(doctorId);
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ExceptionForm>({
     resolver: zodResolver(exceptionSchema),
-    defaultValues: { type: 'day_off', date: new Date().toISOString().split('T')[0] }
+    defaultValues: { type: 'day_off', date: new Date().toISOString().split('T')[0] },
   });
 
   const watchType = watch('type');
 
   const onSubmit = (data: ExceptionForm) => {
-    createMut.mutate(data, { onSuccess: () => setOpen(false) });
+    createMut.mutate(data, {
+      onSuccess: () => setOpen(false),
+    });
   };
 
   const onOpenAdd = () => {
     reset({ type: 'day_off', date: new Date().toISOString().split('T')[0] });
     setOpen(true);
+  };
+
+  const onConfirmDelete = () => {
+    if (!deletingId) return;
+    deleteMut.mutate(deletingId, {
+      onSuccess: () => setDeletingId(null),
+    });
   };
 
   return (
@@ -57,9 +67,11 @@ export function ExceptionsEditor({ doctorId, exceptions }: Props) {
         <div>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <Settings2 className="h-5 w-5 text-primary" />
-            Exceptions & Overrides
+            Exceptions &amp; Overrides
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Manage specific dates with custom hours or days off.</p>
+          <p className="text-sm text-muted-foreground">
+            Manage specific dates with custom hours or days off.
+          </p>
         </div>
         {canEdit && (
           <Button size="sm" onClick={onOpenAdd} variant="outline" className="border-primary/50 text-primary">
@@ -67,6 +79,7 @@ export function ExceptionsEditor({ doctorId, exceptions }: Props) {
           </Button>
         )}
       </CardHeader>
+
       <CardContent className="space-y-4 pt-4">
         {exceptions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">
@@ -76,26 +89,51 @@ export function ExceptionsEditor({ doctorId, exceptions }: Props) {
         ) : (
           <div className="space-y-3">
             {exceptions.map(e => (
-              <div key={e.id} className={`p-4 border rounded-lg flex flex-col md:flex-row md:items-center py-3 justify-between gap-4 ${e.type === 'day_off' ? 'bg-destructive/5 border-destructive/20' : 'bg-muted/10'}`}>
+              <div
+                key={e.id}
+                className={`p-4 border rounded-lg flex flex-col md:flex-row md:items-center py-3 justify-between gap-4 ${
+                  e.type === 'day_off' ? 'bg-destructive/5 border-destructive/20' : 'bg-muted/10'
+                }`}
+              >
                 <div className="flex items-start gap-4 flex-1">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background border shadow-sm">
-                    {e.type === 'day_off' ? <CalendarOff className="h-4 w-4 text-destructive" /> : <Clock className="h-4 w-4 text-amber-500" />}
+                    {e.type === 'day_off'
+                      ? <CalendarOff className="h-4 w-4 text-destructive" />
+                      : <Clock className="h-4 w-4 text-amber-500" />
+                    }
                   </div>
                   <div className="space-y-1">
-                    <p className="font-semibold">{new Date(e.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <p className="font-semibold">
+                      {new Date(e.date + 'T00:00:00').toLocaleDateString(undefined, {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </p>
                     <div className="text-sm font-medium">
                       {e.type === 'day_off' ? (
                         <span className="text-destructive">Full Day Off</span>
                       ) : (
-                        <span className="text-amber-600">Custom Hours: {e.start_time?.substring(0, 5)} - {e.end_time?.substring(0, 5)}</span>
+                        <span className="text-amber-600">
+                          Custom Hours: {e.start_time?.substring(0, 5)} – {e.end_time?.substring(0, 5)}
+                        </span>
                       )}
                     </div>
-                    {e.reason && <p className="text-sm text-muted-foreground mt-1">{e.reason}</p>}
+                    {e.reason && (
+                      <p className="text-sm text-muted-foreground mt-1">{e.reason}</p>
+                    )}
                   </div>
                 </div>
 
                 {canEdit && (
-                  <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 shrink-0" onClick={() => setDeletingId(e.id)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:bg-destructive/10 shrink-0"
+                    onClick={() => setDeletingId(e.id)}
+                    disabled={deleteMut.isPending}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
@@ -104,6 +142,7 @@ export function ExceptionsEditor({ doctorId, exceptions }: Props) {
           </div>
         )}
 
+        {/* ── Add Exception Modal ──────────────────────────────────────────── */}
         <ModalForm
           open={open}
           onOpenChange={setOpen}
@@ -147,24 +186,19 @@ export function ExceptionsEditor({ doctorId, exceptions }: Props) {
           )}
 
           <div className="grid gap-2 mt-2">
-            <Label>Reason (Optional)</Label>
+            <Label>Reason <span className="text-muted-foreground font-normal">(optional)</span></Label>
             <Textarea {...register('reason')} placeholder="e.g. Annual Leave, Conference..." />
             {errors.reason && <p className="text-xs text-destructive">{errors.reason.message}</p>}
           </div>
-
-          {createMut.error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-md p-3 mt-4">
-              {(createMut.error as any).response?.data?.message || createMut.error.message}
-            </div>
-          )}
         </ModalForm>
 
+        {/* ── Delete Confirm ────────────────────────────────────────────────── */}
         <ConfirmDialog
           open={!!deletingId}
-          onOpenChange={(o) => (!o && setDeletingId(null))}
+          onOpenChange={(o) => { if (!o) setDeletingId(null); }}
           title="Delete Exception"
           description="Are you sure you want to remove this schedule exception?"
-          onConfirm={() => deletingId && deleteMut.mutate(deletingId, { onSuccess: () => setDeletingId(null) })}
+          onConfirm={onConfirmDelete}
           confirmLabel="Delete"
           variant="destructive"
           isPending={deleteMut.isPending}

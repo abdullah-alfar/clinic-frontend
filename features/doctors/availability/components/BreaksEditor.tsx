@@ -25,29 +25,40 @@ interface Props {
 
 export function BreaksEditor({ doctorId, scheduleId, canEdit, shiftStart, shiftEnd }: Props) {
   const { data } = useDoctorAvailability(doctorId);
-  const breaks = data?.breaks.filter(b => b.schedule_id === scheduleId) || [];
+  const breaks = data?.breaks.filter(b => b.schedule_id === scheduleId) ?? [];
 
   const [open, setOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // Toasts (success / error) are fired inside the hooks.
   const createMut = useCreateBreak(doctorId);
   const deleteMut = useDeleteBreak(doctorId);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<BreakForm>({
     resolver: zodResolver(breakSchema),
-    defaultValues: { start_time: shiftStart.substring(0, 5), end_time: shiftEnd.substring(0, 5), label: 'Lunch' }
+    defaultValues: {
+      start_time: shiftStart.substring(0, 5),
+      end_time: shiftEnd.substring(0, 5),
+      label: 'Lunch',
+    },
   });
 
   const onSubmit = (data: BreakForm) => {
     createMut.mutate({ scheduleId, data }, {
-      onSuccess: () => setOpen(false)
+      onSuccess: () => setOpen(false),
     });
   };
 
   const onOpenAdd = () => {
-    // Default to a 1 hour break in the middle if possible, else just shift bounds
     reset({ start_time: shiftStart.substring(0, 5), end_time: shiftEnd.substring(0, 5), label: 'Lunch' });
     setOpen(true);
+  };
+
+  const onConfirmDelete = () => {
+    if (!deletingId) return;
+    deleteMut.mutate(deletingId, {
+      onSuccess: () => setDeletingId(null),
+    });
   };
 
   return (
@@ -71,9 +82,17 @@ export function BreaksEditor({ doctorId, scheduleId, canEdit, shiftStart, shiftE
             <div key={b.id} className="flex items-center justify-between bg-muted/30 px-3 py-1.5 rounded-md text-sm">
               <span className="font-medium text-muted-foreground">{b.label}</span>
               <div className="flex items-center gap-3">
-                <span className="font-mono text-xs">{b.start_time.substring(0, 5)} - {b.end_time.substring(0, 5)}</span>
+                <span className="font-mono text-xs">
+                  {b.start_time.substring(0, 5)} – {b.end_time.substring(0, 5)}
+                </span>
                 {canEdit && (
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70 hover:text-destructive" onClick={() => setDeletingId(b.id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-destructive/70 hover:text-destructive"
+                    onClick={() => setDeletingId(b.id)}
+                    disabled={deleteMut.isPending}
+                  >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 )}
@@ -83,6 +102,7 @@ export function BreaksEditor({ doctorId, scheduleId, canEdit, shiftStart, shiftE
         </div>
       )}
 
+      {/* ── Add Break Modal ─────────────────────────────────────────────────── */}
       <ModalForm
         open={open}
         onOpenChange={setOpen}
@@ -97,7 +117,7 @@ export function BreaksEditor({ doctorId, scheduleId, canEdit, shiftStart, shiftE
           <Input {...register('label')} placeholder="e.g. Lunch, Prayer" />
           {errors.label && <p className="text-xs text-destructive">{errors.label.message}</p>}
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
             <Label>Start Time</Label>
@@ -110,20 +130,15 @@ export function BreaksEditor({ doctorId, scheduleId, canEdit, shiftStart, shiftE
             {errors.end_time && <p className="text-xs text-destructive">{errors.end_time.message}</p>}
           </div>
         </div>
-
-        {createMut.error && (
-          <div className="bg-destructive/10 text-destructive text-sm rounded p-3">
-            {(createMut.error as any).response?.data?.message || createMut.error.message}
-          </div>
-        )}
       </ModalForm>
 
+      {/* ── Delete Confirm ────────────────────────────────────────────────── */}
       <ConfirmDialog
         open={!!deletingId}
-        onOpenChange={(o) => (!o && setDeletingId(null))}
+        onOpenChange={(o) => { if (!o) setDeletingId(null); }}
         title="Delete Break"
         description="Are you sure you want to remove this break?"
-        onConfirm={() => deletingId && deleteMut.mutate(deletingId, { onSuccess: () => setDeletingId(null) })}
+        onConfirm={onConfirmDelete}
         confirmLabel="Delete"
         variant="destructive"
         isPending={deleteMut.isPending}
