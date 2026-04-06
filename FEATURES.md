@@ -296,9 +296,20 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - **Patients**: First name, last name, phone, email.
 - **Doctors**: Full name, specialty, license number.
 - **Appointments**: Patient name, doctor name, status, reason, notes.
-- **Billing**: Invoice status, amount, patient name.
-- **Reports**: Filename, mime type, associated patient.
-- **Medical Notes**: Diagnoses, prescriptions, clinical notes.
+- **Billing**: Invoice status, amount,
+
+### Patient Management
+- **Centralized Patient List**: Advanced search and filtering for patient records.
+- **Patient Profile 360°**: Complete 360-degree view of a patient, including:
+  - Personal & Contact Information
+  - Medical History & Clinical Notes
+  - Appointment Timeline (Past & Upcoming)
+  - billing & Invoice status
+  - Document & Report management with AI analysis
+  - Communication History (WhatsApp & Notifications)
+  - Quick Actions for streamlined workflows
+- **Medical Records**: Structured storage of diagnoses, vitals, and prescriptions.
+, clinical notes.
 - **AI Memory**: Summaries of medical insights and automated report analyses.
 - **Notifications**: Title, message content, type, status.
 - **Audit Logs**: Actions, entity types, per-user activity history.
