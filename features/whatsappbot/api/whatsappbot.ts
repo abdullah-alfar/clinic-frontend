@@ -1,12 +1,15 @@
 import { apiClient } from '@/lib/api/client';
 import { WhatsAppMessage, WhatsAppBotStatus } from '../types';
+import { ApiResponse } from '@/types';
 
 export const whatsappApi = {
   getPatientHistory: async (patientId: string): Promise<WhatsAppMessage[]> => {
-    return apiClient.get(`/api/v1/patients/${patientId}/whatsapp/history`);
+    const { data } = await apiClient.get<ApiResponse<WhatsAppMessage[]>>(`/patients/${patientId}/whatsapp/history`);
+    return data.data ?? [];
   },
   
   getBotStatus: async (patientId: string): Promise<WhatsAppBotStatus> => {
-    return apiClient.get(`/api/v1/patients/${patientId}/whatsapp/status`);
+    const { data } = await apiClient.get<ApiResponse<WhatsAppBotStatus>>(`/patients/${patientId}/whatsapp/status`);
+    return data.data;
   }
 };
