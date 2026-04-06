@@ -253,24 +253,29 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 #### Frontend:
 - `AppTopbar` dropdown
 - `/notifications`
-- `Patient Communications` tab inside Patient detail view
+- **Patient Communications Tab**: Unified view of messaging readiness, opt-in status, and full delivery logs for a specific patient.
 
 ---
 
 ### 🤖 WhatsApp Bot (Self-Service)
 
 #### Features:
-- **Stateful Conversational Engine**: Session-based router handling multi-step patient intents over WhatsApp.
+- **Stateful Conversational Engine**: Session-based router handling multi-step patient intents (Book, View, Cancel) over WhatsApp using context-aware state management.
 - **Webhook Integration**: Secure inbound webhook receiver for parsing external messaging provider payloads (e.g., Meta, Twilio).
 - **Patient Verification**: E.164 phone number normalization for automatic profile linking with inbound messages.
-- **Self-Service Actions**: AI-ready routing for appointment inquiries, cancellation requests, and report retrievals.
+- **Automated Booking Flow**: Guided self-service for selecting dates and time slots based on real-time doctor availability and existing appointments.
+- **Appointment Retrieval**: Instant "View Next Appointment" inquiry with doctor and time details.
+- **One-Tap Cancellation**: Secure confirmation-based cancellation of upcoming appointments directly from the chat.
 
 #### Related API:
 - `POST /webhooks/whatsapp`
+- `GET /api/v1/patients/{id}/whatsapp/history` (Administrative log)
+- `GET /api/v1/patients/{id}/whatsapp/status` (Readiness check)
 
 #### Architecture:
 - `whatsappbot` internal module with session tracking in PostgreSQL (JSONB state).
 - Decoupled `whatsapp.Sender` interface for easy provider swapping.
+- Integration with `AvailabilityService` for real-time slot generation.
 
 ---
 

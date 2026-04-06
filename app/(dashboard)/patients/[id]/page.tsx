@@ -17,7 +17,8 @@ import {
   MoreVertical,
   Plus,
   CreditCard,
-  FileBarChart
+  FileBarChart,
+  MessageCircle
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { BookingModal } from '@/components/appointments/BookingModal';
@@ -29,6 +30,8 @@ import { ContactChannelReadiness } from '@/features/notifications/components/Con
 import { NotificationHistoryList } from '@/features/notifications/components/NotificationHistoryList';
 import { NotificationPreferencesForm } from '@/features/notifications/components/NotificationPreferencesForm';
 import { MedicalRecordList } from '@/features/medical/components/MedicalRecordList';
+import { WhatsAppReadinessCard } from '@/features/whatsappbot/components/WhatsAppReadinessCard';
+import { WhatsAppHistoryList } from '@/features/whatsappbot/components/WhatsAppHistoryList';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SectionCard } from '@/components/layout/SectionCard';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -360,10 +363,14 @@ export default function PatientDetailPage(props: { params: Promise<{ id: string 
         <TabsContent value="communications" className="focus-visible:outline-none focus-visible:ring-0">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-1 space-y-6">
+              <WhatsAppReadinessCard patientId={params.id} />
               <ContactChannelReadiness patient={patient} />
               <NotificationPreferencesForm patientId={params.id} />
             </div>
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 space-y-6">
+              <SectionCard title="WhatsApp Native Logs" icon={MessageCircle}>
+                <WhatsAppHistoryList patientId={params.id} />
+              </SectionCard>
               <NotificationHistoryList patientId={params.id} />
             </div>
           </div>
