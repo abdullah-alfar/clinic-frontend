@@ -42,7 +42,13 @@ export default function LoginPage() {
       setTokens(tokens.access_token, tokens.refresh_token);
       const me = await getMe();
       setUser(me);
-      router.push('/dashboard');
+
+      // Redirect based on role
+      if (me.role === 'doctor') {
+        router.push('/doctor-dashboard');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       setServerError(msg || 'Invalid credentials. Please try again.');

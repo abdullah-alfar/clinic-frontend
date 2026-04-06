@@ -27,6 +27,7 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - **Advanced Doctor Availability**
 - **Smart Scheduling & Recommendations**
 - **Recurring Appointments**
+- **Doctor Dashboard**
 
 ---
 
@@ -352,6 +353,27 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - `features/doctors/availability/components/ExceptionsEditor.tsx`
 - `app/(dashboard)/doctors/[id]/availability`
 - Fully typed TanStack standard API Hooks
+
+---
+
+### 👨‍⚕️ Doctor Dashboard
+
+#### Features:
+- **Focused Workspace**: Dedicated entry point for doctors to manage their daily clinical operations.
+- **Dynamic Stats Cards**: Real-time tracking of appointments today, upcoming, completed, no-shows, and pending notes.
+- **Today's Schedule**: High-priority list of patients today with direct links to profiles and status indicators.
+- **Medical Activity Feed**: Chronological timeline of recent visits and notes managed by the doctor.
+- **Quick Action Center**: Keyboard-friendly shortcuts for scheduling, patient search, and clinical documentation.
+- **Pending Notes Tracker**: Automated discovery of completed visits requiring documentation (notes/diagnosis).
+- **Tenant & Role Aware**: Strict security ensures doctors only see their own workload and patient data within their tenant.
+
+#### Related API:
+- `GET /api/v1/doctor-dashboard`
+
+#### Frontend:
+- `/doctor-dashboard` (Main workspace)
+- `features/doctor-dashboard/components` (Specialized UI widgets)
+- `useDoctorDashboard` (Real-time data synchronization hook)
 
 ---
 
