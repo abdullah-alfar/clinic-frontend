@@ -28,6 +28,7 @@ import { AttachmentUploader } from '@/features/attachments/components/Attachment
 import { ContactChannelReadiness } from '@/features/notifications/components/ContactChannelReadiness';
 import { NotificationHistoryList } from '@/features/notifications/components/NotificationHistoryList';
 import { NotificationPreferencesForm } from '@/features/notifications/components/NotificationPreferencesForm';
+import { MedicalRecordList } from '@/features/medical/components/MedicalRecordList';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SectionCard } from '@/components/layout/SectionCard';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -163,9 +164,9 @@ export default function PatientDetailPage(props: { params: Promise<{ id: string 
 
       {/* Main Tabs System */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <div className="flex items-center justify-between border-b border-border/40 pb-1">
-          <TabsList className="bg-transparent border-none gap-6 h-auto p-0">
-            {['overview', 'appointments', 'billing', 'reports', 'notes', 'communications'].map((tab) => (
+        <div className="flex items-center justify-between border-b border-border/40 pb-1 overflow-x-auto scroolbar-hide">
+          <TabsList className="bg-transparent border-none gap-6 h-auto p-0 min-w-max">
+            {['overview', 'medical-records', 'appointments', 'billing', 'reports', 'notes', 'communications'].map((tab) => (
               <TabsTrigger 
                 key={tab}
                 value={tab} 
@@ -225,6 +226,12 @@ export default function PatientDetailPage(props: { params: Promise<{ id: string 
               </SectionCard>
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="medical-records" className="focus-visible:outline-none focus-visible:ring-0 mt-6">
+          <SectionCard title="Medical History" icon={Stethoscope}>
+            <MedicalRecordList patientId={params.id} />
+          </SectionCard>
         </TabsContent>
 
         <TabsContent value="appointments" className="focus-visible:outline-none focus-visible:ring-0">
@@ -341,6 +348,12 @@ export default function PatientDetailPage(props: { params: Promise<{ id: string 
                 ))}
               </div>
             )}
+          </SectionCard>
+          
+          <SectionCard title="Timeline Integration" icon={CalendarIcon} className="mt-6">
+            <div className="text-sm text-muted-foreground p-4 bg-muted/20 rounded-xl border">
+               Integration ready. Visit timeline events (including type: 'medical_record') will populate dynamically as updates propagate.
+            </div>
           </SectionCard>
         </TabsContent>
 

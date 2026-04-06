@@ -160,19 +160,26 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 
 ---
 
-### 📝 Medical Records (Visits)
+### 📝 Medical Records System (Clinical Data)
 
 #### Features:
-- **Visit Documentation**: Record detailed observations, diagnoses, and prescriptions.
-- **Enrichment**: Link visits to specific appointments for complete record keeping.
-- **Historical Analysis**: View past visits chronologically.
+- **Structured Clinical Data**: Detailed tracking of diagnoses, clinical notes, and specific arrays of Vitals and Medications.
+- **Enrichment**: Link records to specific appointments and doctors for complete record keeping.
+- **Historical Timeline**: View past medical records chronologically integrated with the overall Patient Timeline alongside visits and appointments.
+- **Flexible Management**: Support for creating and partially updating comprehensive clinical histories.
 
 #### Related API:
-- `POST /api/v1/visits`
-- `GET /api/v1/patients/{id}/timeline`
+- `GET /api/v1/patients/{id}/medical-records`
+- `POST /api/v1/patients/{id}/medical-records`
+- `GET /api/v1/medical-records/{id}`
+- `PATCH /api/v1/medical-records/{id}`
+- `DELETE /api/v1/medical-records/{id}`
+- `GET /api/v1/patients/{id}/timeline` (Integrated)
 
 #### Frontend:
-- `VisitsList` (Inside patient tabs)
+- `MedicalRecordList` and `MedicalRecordCard` components
+- `MedicalRecordForm` with dynamic nested vital and medication trackers
+- "Medical Records" tab inside patient detail views
 
 ---
 
