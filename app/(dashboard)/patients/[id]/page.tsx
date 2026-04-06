@@ -3,7 +3,6 @@
 import { use } from 'react';
 import { usePatientProfile } from '@/features/patient-profile/hooks/usePatientProfile';
 import { PatientProfileHeader } from '@/features/patient-profile/components/PatientProfileHeader';
-import { PatientSnapshotCards } from '@/features/patient-profile/components/PatientSnapshotCards';
 import { PatientProfileTabs } from '@/features/patient-profile/components/PatientProfileTabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserCircle, ArrowLeft } from 'lucide-react';

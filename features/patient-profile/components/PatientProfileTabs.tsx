@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SectionCard } from '@/components/layout/SectionCard';
-import { Stethoscope, Calendar, CreditCard, FileText, MessageSquare, User } from 'lucide-react';
+import { History, Stethoscope, Calendar, CreditCard, FileText, MessageSquare, User } from 'lucide-react';
 import { PatientDTO, PatientRecentActivity as RecentActivityData } from '../types';
 import { MedicalRecordList } from '@/features/medical/components/MedicalRecordList';
 import { PatientInvoices } from '@/components/invoices/PatientInvoices';
@@ -14,6 +14,7 @@ import { NotificationHistoryList } from '@/features/notifications/components/Not
 import { NotificationPreferencesForm } from '@/features/notifications/components/NotificationPreferencesForm';
 import { ContactChannelReadiness } from '@/features/notifications/components/ContactChannelReadiness';
 import { PatientRecentActivity } from './PatientRecentActivity';
+import { MedicalTimelineList } from '@/features/timeline/components/MedicalTimelineList';
 
 interface PatientProfileTabsProps {
   patient: PatientDTO;
@@ -22,9 +23,10 @@ interface PatientProfileTabsProps {
 
 export function PatientProfileTabs({ patient, activities }: PatientProfileTabsProps) {
   return (
-    <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="bg-transparent border-b w-full justify-start rounded-none h-auto p-0 mb-6">
+    <Tabs defaultValue="timeline" className="w-full">
+      <TabsList className="bg-transparent border-b w-full justify-start rounded-none h-auto p-0 mb-8 gap-0">
         {[
+          { id: 'timeline', label: 'Medical Timeline', icon: <History className="h-4 w-4" /> },
           { id: 'overview', label: 'Overview', icon: <User className="h-4 w-4" /> },
           { id: 'medical-records', label: 'Medical', icon: <Stethoscope className="h-4 w-4" /> },
           { id: 'appointments', label: 'History', icon: <Calendar className="h-4 w-4" /> },
@@ -35,7 +37,7 @@ export function PatientProfileTabs({ patient, activities }: PatientProfileTabsPr
           <TabsTrigger
             key={tab.id}
             value={tab.id}
-            className="bg-transparent border-none shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary px-4 pb-3 pt-2"
+            className="bg-transparent border-none shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary px-5 pb-3 pt-2 font-bold transition-all text-muted-foreground/70"
           >
             <div className="flex items-center gap-2">
               {tab.icon}
@@ -45,7 +47,13 @@ export function PatientProfileTabs({ patient, activities }: PatientProfileTabsPr
         ))}
       </TabsList>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
+        <TabsContent value="timeline" className="focus-visible:outline-none m-0">
+          <div className="max-w-4xl">
+            <MedicalTimelineList patientId={patient.id} />
+          </div>
+        </TabsContent>
+
         <TabsContent value="overview" className="focus-visible:outline-none m-0">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 space-y-6">
