@@ -28,6 +28,7 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - **Smart Scheduling & Recommendations**
 - **Recurring Appointments**
 - **Doctor Dashboard**
+- **Operational Intelligence (AI-Driven)**
 
 ---
 
@@ -133,6 +134,26 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 #### Frontend:
 - `SmartSuggestions` component (Integrated in `BookingModal`)
 - `useSmartSuggestions` hook
+
+---
+
+### 🧠 Operational Intelligence (AI-Driven)
+
+#### Features:
+- **No-Show Predictor**: Behavioral analysis scoring (Low, Medium, High) based on patient history, gaps, and last attendance.
+- **Automated Revenue Capture**: Keyword-based scanning ("stitches", "x-ray", etc.) in medical notes cross-referenced with invoices.
+- **Unified Communications Inbox**: Centralized message hub for WhatsApp, Email, and SMS.
+- **AI Classification**: Automatic categorization of incoming messages (Emergency, Booking, Complaint).
+
+#### Related API:
+- `GET /api/v1/appointments/{id}/no-show-risk`
+- `GET /api/v1/revenue/missing`
+- `GET /api/v1/communications`
+
+#### Frontend:
+- `NoShowBadge` component
+- `RevenueAlerts` component
+- `InboxList` & `InboxMessage` components
 
 ---
 
