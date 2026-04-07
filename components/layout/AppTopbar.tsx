@@ -20,7 +20,7 @@ import { formatClinicDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { GlobalSearch } from '@/features/search/components/GlobalSearch';
+import { AISearchBar } from '@/features/ai';
 
 export function AppTopbar() {
   const router = useRouter();
@@ -48,7 +48,7 @@ export function AppTopbar() {
     <header className="sticky top-0 z-40 flex h-20 items-center justify-between border-b border-border/60 bg-background/80 backdrop-blur-xl px-6 lg:px-8 transition-all duration-300">
       {/* Search Bar Area */}
       <div className="flex-1 max-w-xl pr-8">
-        <GlobalSearch />
+        <AISearchBar />
       </div>
 
       <div className="flex items-center gap-4">

@@ -3,6 +3,7 @@
 import { AppSidebar } from './AppSidebar';
 import { AppTopbar } from './AppTopbar';
 import { AuthGuard } from './AuthGuard';
+import { AIChatPanel } from '@/features/ai';
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
@@ -11,8 +12,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <AppTopbar />
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
             {children}
+            <AIChatPanel />
           </main>
         </div>
       </div>
