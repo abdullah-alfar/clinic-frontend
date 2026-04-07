@@ -14,11 +14,14 @@ import {
   UserX,
   Clock, 
   Bell, 
-  TrendingUp, 
-  DollarSign, 
-  Activity,
   Plus,
-  ArrowRight
+  ArrowRight,
+  ShieldAlert,
+  AlertTriangle,
+  MessageSquare,
+  TrendingUp,
+  DollarSign,
+  Activity
 } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { formatClinicDate, formatClinicTime } from '@/lib/formatters';
@@ -29,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { FollowUpDashboard } from '@/features/followups/components/FollowUpDashboard';
+import { useCommunications } from '@/features/ops-intelligence/api';
 
 export default function DashboardPage() {
   const { tenant } = useTheme();
@@ -192,6 +196,69 @@ export default function DashboardPage() {
                 Mark all as read
               </Button>
             </div>
+          </SectionCard>
+
+          {/* Operations Intelligence Dashboard Section */}
+          <SectionCard 
+            title="Operational Alerts" 
+            icon={ShieldAlert}
+            description="Intelligence-driven insights"
+            className="border-primary/20 bg-primary/5 shadow-lg shadow-primary/5"
+          >
+             <div className="space-y-4">
+                <div 
+                  className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-black/20 border border-border/40 hover:border-primary/30 transition-all cursor-pointer group shadow-sm active:scale-95"
+                  onClick={() => router.push('/operations?tab=no-show')}
+                >
+                   <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center border border-destructive/10">
+                         <AlertTriangle className="h-5 w-5" />
+                      </div>
+                      <div>
+                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">No-Show Risk</p>
+                         <p className="text-sm font-extrabold tracking-tight">Predicted: 4 Patients</p>
+                      </div>
+                   </div>
+                   <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all" />
+                </div>
+
+                <div 
+                  className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-black/20 border border-border/40 hover:border-primary/30 transition-all cursor-pointer group shadow-sm active:scale-95"
+                  onClick={() => router.push('/operations?tab=revenue')}
+                >
+                   <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center border border-amber-500/10">
+                         <DollarSign className="h-5 w-5" />
+                      </div>
+                      <div>
+                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">Revenue Protection</p>
+                         <p className="text-sm font-extrabold tracking-tight">12 Missing Billing</p>
+                      </div>
+                   </div>
+                   <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all" />
+                </div>
+
+                <div 
+                  className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-black/20 border border-border/40 hover:border-primary/30 transition-all cursor-pointer group shadow-sm active:scale-95"
+                  onClick={() => router.push('/operations?tab=inbox')}
+                >
+                   <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/10">
+                         <MessageSquare className="h-5 w-5" />
+                      </div>
+                      <div>
+                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">Unified Inbox</p>
+                         <p className="text-sm font-extrabold tracking-tight">8 Urgent Messages</p>
+                      </div>
+                   </div>
+                   <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all" />
+                </div>
+
+                <Button variant="ghost" className="w-full text-xs font-extrabold uppercase tracking-widest text-primary gap-2 hover:bg-primary/5 h-10 rounded-xl" onClick={() => router.push('/operations')}>
+                   Open Intelligence Center
+                   <ArrowRight className="h-3 w-3" />
+                </Button>
+             </div>
           </SectionCard>
 
           <SectionCard title="Doctor Workload" icon={UserSquare2}>

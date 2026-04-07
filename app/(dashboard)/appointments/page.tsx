@@ -17,6 +17,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { formatClinicDate, formatClinicTime } from '@/lib/formatters';
 import { useTheme } from '@/providers/ThemeProvider';
+import { NoShowBadge } from '@/features/ops-intelligence/components/NoShowBadge';
 
 const STATUS_COLORS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   scheduled: 'outline',
@@ -156,7 +157,12 @@ export default function AppointmentsPage() {
                     {doctor?.full_name ?? a.doctor_id.slice(0, 8)}
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={a.status} />
+                    <div className="flex flex-col gap-2">
+                      <StatusBadge status={a.status} />
+                      {(a.status === 'scheduled' || a.status === 'confirmed') && (
+                        <NoShowBadge appointmentId={a.id} patientId={a.patient_id} />
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1.5">

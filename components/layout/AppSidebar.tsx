@@ -9,6 +9,7 @@ import {
   CalendarCheck,
   Bell,
   Settings,
+  Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -19,6 +20,7 @@ const navItems = [
   { label: 'Patients', href: '/patients', icon: Users },
   { label: 'Doctors', href: '/doctors', icon: UserSquare2 },
   { label: 'Appointments', href: '/appointments', icon: CalendarCheck },
+  { label: 'Operations', href: '/operations', icon: Activity },
   { label: 'Notifications', href: '/notifications', icon: Bell },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];

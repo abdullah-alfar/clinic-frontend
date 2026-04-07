@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { LogOut, Bell, User, Search, Settings, Calendar, Users, Plus } from 'lucide-react';
+import { LogOut, Bell, User, Search, Settings, Calendar, Users, Plus, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { AISearchBar } from '@/features/ai';
+import { useCommunications } from '@/features/ops-intelligence/api';
 
 export function AppTopbar() {
   const router = useRouter();
@@ -32,6 +33,9 @@ export function AppTopbar() {
     queryKey: ['notifications'],
     queryFn: () => getNotifications(5),
   });
+
+  const { data: communications } = useCommunications();
+  const unreadMessagesCount = communications?.filter(c => c.status === 'unread').length || 0;
 
   const unreadCount = notifications?.filter(n => n.status !== 'read').length || 0;
 
@@ -54,6 +58,24 @@ export function AppTopbar() {
       <div className="flex items-center gap-4">
         <ThemeToggle />
         
+        {/* Unified Inbox Icon */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push('/operations?tab=inbox')}
+          className={cn(
+            "relative text-muted-foreground hover:text-foreground h-10 w-10 rounded-2xl bg-muted/30 group transition-all active:scale-95",
+            unreadMessagesCount > 0 && "text-foreground"
+          )}
+        >
+          <MessageSquare className="h-5.5 w-5.5 group-hover:-rotate-6 transition-transform" />
+          {unreadMessagesCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white ring-4 ring-background shadow-lg shadow-primary/20 animate-in zoom-in duration-300">
+              {unreadMessagesCount}
+            </span>
+          )}
+        </Button>
+
         {/* Notifications Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
