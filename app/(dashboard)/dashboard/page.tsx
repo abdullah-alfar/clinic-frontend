@@ -28,6 +28,7 @@ import { SectionCard } from '@/components/layout/SectionCard';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { FollowUpDashboard } from '@/features/followups/components/FollowUpDashboard';
 
 export default function DashboardPage() {
   const { tenant } = useTheme();
@@ -163,6 +164,8 @@ export default function DashboardPage() {
                View Full Schedule
              </Button>
           </SectionCard>
+
+          <FollowUpDashboard />
         </div>
 
         {/* Sidebar area */}

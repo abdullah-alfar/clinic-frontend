@@ -2,7 +2,8 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SectionCard } from '@/components/layout/SectionCard';
-import { History, Stethoscope, Calendar, CreditCard, FileText, MessageSquare, User } from 'lucide-react';
+import { History, Stethoscope, Calendar, CreditCard, FileText, MessageSquare, User, ClipboardList } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { PatientDTO, PatientRecentActivity as RecentActivityData } from '../types';
 import { MedicalRecordList } from '@/features/medical/components/MedicalRecordList';
 import { PatientInvoices } from '@/components/invoices/PatientInvoices';
@@ -15,6 +16,12 @@ import { NotificationPreferencesForm } from '@/features/notifications/components
 import { ContactChannelReadiness } from '@/features/notifications/components/ContactChannelReadiness';
 import { PatientRecentActivity } from './PatientRecentActivity';
 import { MedicalTimelineList } from '@/features/timeline/components/MedicalTimelineList';
+import { FollowUpList } from '@/features/followups/components/FollowUpList';
+import { FollowUpForm } from '@/features/followups/components/FollowUpForm';
+import { usePatientFollowUps } from '@/features/followups/hooks/useFollowUps';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
 
 interface PatientProfileTabsProps {
   patient: PatientDTO;
@@ -32,6 +39,7 @@ export function PatientProfileTabs({ patient, activities }: PatientProfileTabsPr
           { id: 'appointments', label: 'History', icon: <Calendar className="h-4 w-4" /> },
           { id: 'billing', label: 'Billing', icon: <CreditCard className="h-4 w-4" /> },
           { id: 'reports', label: 'Reports', icon: <FileText className="h-4 w-4" /> },
+          { id: 'follow-ups', label: 'Follow-ups', icon: <ClipboardList className="h-4 w-4" /> },
           { id: 'communications', label: 'Communications', icon: <MessageSquare className="h-4 w-4" /> },
         ].map((tab) => (
           <TabsTrigger
@@ -109,6 +117,10 @@ export function PatientProfileTabs({ patient, activities }: PatientProfileTabsPr
           </SectionCard>
         </TabsContent>
 
+        <TabsContent value="follow-ups" className="focus-visible:outline-none m-0">
+          <FollowUpTabContent patientId={patient.id} />
+        </TabsContent>
+
         <TabsContent value="communications" className="focus-visible:outline-none m-0">
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-1 space-y-6">
@@ -124,6 +136,38 @@ export function PatientProfileTabs({ patient, activities }: PatientProfileTabsPr
         </TabsContent>
       </div>
     </Tabs>
+  );
+}
+
+function FollowUpTabContent({ patientId }: { patientId: string }) {
+  const [open, setOpen] = useState(false);
+  const { data: followups, isLoading } = usePatientFollowUps(patientId);
+
+  return (
+    <SectionCard
+      title="Patient Follow-ups"
+      icon={ClipboardList}
+      action={
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="gap-2">
+              <Plus className="h-4 w-4" />
+              New Follow-up
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Follow-up</DialogTitle>
+            </DialogHeader>
+            <FollowUpForm patientId={patientId} onSuccess={() => setOpen(false)} />
+          </DialogContent>
+        </Dialog>
+      }
+    >
+      <div className="max-w-3xl">
+        <FollowUpList followups={followups} isLoading={isLoading} />
+      </div>
+    </SectionCard>
   );
 }
 

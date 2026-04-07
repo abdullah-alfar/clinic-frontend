@@ -24,7 +24,11 @@ import { formatClinicDate, formatClinicTime } from '@/lib/formatters';
 import { useTheme } from '@/providers/ThemeProvider';
 import { confirmAppointment, cancelAppointment, completeAppointment } from '@/lib/api/appointments';
 import { useMarkAppointmentNoShow } from '../hooks/useMarkAppointmentNoShow';
+import { FollowUpForm } from '@/features/followups/components/FollowUpForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
 
 interface AppointmentDetailViewProps {
   appointment: AppointmentDetailDTO;
@@ -35,6 +39,7 @@ export function AppointmentDetailView({ appointment }: AppointmentDetailViewProp
   const qc = useQueryClient();
   const { tenant } = useTheme();
   const tz = tenant?.timezone;
+  const [showFollowUp, setShowFollowUp] = useState(false);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['appointment', appointment.id] });
@@ -53,7 +58,11 @@ export function AppointmentDetailView({ appointment }: AppointmentDetailViewProp
   
   const completeMut = useMutation({ 
     mutationFn: () => completeAppointment(appointment.id), 
-    onSuccess: () => { toast.success('Appointment completed'); invalidate(); } 
+    onSuccess: () => { 
+      toast.success('Appointment completed'); 
+      invalidate(); 
+      setShowFollowUp(true);
+    } 
   });
   
   const noShowMut = useMarkAppointmentNoShow();
@@ -237,9 +246,32 @@ export function AppointmentDetailView({ appointment }: AppointmentDetailViewProp
               )}
 
               {!isActive && (
-                <p className="text-xs text-center text-muted-foreground py-4 px-2">
-                  No actions available for status: <span className="font-bold uppercase">{appointment.status}</span>
-                </p>
+                <>
+                  <p className="text-xs text-center text-muted-foreground py-4 px-2">
+                    No actions available for status: <span className="font-bold uppercase">{appointment.status}</span>
+                  </p>
+                  
+                  {appointment.status === 'completed' && (
+                    <Dialog open={showFollowUp} onOpenChange={setShowFollowUp}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full gap-2 mt-2">
+                          <Plus className="h-4 w-4" />
+                          Create Follow-up
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Schedule Follow-up</DialogTitle>
+                        </DialogHeader>
+                        <FollowUpForm 
+                          patientId={appointment.patient_id} 
+                          defaultDoctorId={appointment.doctor_id} 
+                          onSuccess={() => setShowFollowUp(false)} 
+                        />
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
