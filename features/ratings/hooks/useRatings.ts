@@ -39,7 +39,7 @@ export const useRatings = () => {
   const useGlobalAnalytics = () => {
     return useQuery({
       queryKey: ['ratings', 'analytics'],
-      queryFn: () => ratingsApi.getGlobalAnalytics().then((res) => res.data),
+      queryFn: () => ratingsApi.getGlobalAnalytics().then((res: any) => res.data),
     });
   };
 
