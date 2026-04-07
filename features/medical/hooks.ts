@@ -69,3 +69,19 @@ export const useDeleteMedicalRecord = (patientId: string) => {
     }
   });
 };
+
+export const useAddProcedureToRecord = (recordId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: import('./types').AddProcedureReq) =>
+      medicalApi.addProcedureToRecord(recordId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['medical-record', recordId] });
+      toast.success('Procedure added to record');
+    },
+    onError: () => {
+      toast.error('Failed to add procedure to record');
+    },
+  });
+};

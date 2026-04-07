@@ -10,6 +10,8 @@ import {
   Bell,
   Settings,
   Activity,
+  Package,
+  FlaskConical,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -21,6 +23,8 @@ const navItems = [
   { label: 'Doctors', href: '/doctors', icon: UserSquare2 },
   { label: 'Appointments', href: '/appointments', icon: CalendarCheck },
   { label: 'Operations', href: '/operations', icon: Activity },
+  { label: 'Inventory', href: '/inventory', icon: Package },
+  { label: 'Procedures', href: '/procedures', icon: FlaskConical },
   { label: 'Notifications', href: '/notifications', icon: Bell },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];

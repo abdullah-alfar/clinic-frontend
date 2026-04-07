@@ -1,9 +1,10 @@
 import { apiClient } from '@/lib/api/client';
 import type { ApiResponse } from '@/types';
-import { 
+import {
   MedicalRecordResponse, 
   CreateMedicalRecordRequest, 
-  UpdateMedicalRecordRequest 
+  UpdateMedicalRecordRequest,
+  AddProcedureReq
 } from './types';
 
 export const medicalApi = {
@@ -39,5 +40,13 @@ export const medicalApi = {
 
   deleteRecord: async (recordId: string) => {
     await apiClient.delete(`/medical-records/${recordId}`);
+  },
+
+  addProcedureToRecord: async (recordId: string, payload: AddProcedureReq) => {
+    const { data } = await apiClient.post<ApiResponse<void>>(
+      `/medical-records/${recordId}/procedures`,
+      payload
+    );
+    return data;
   }
 };

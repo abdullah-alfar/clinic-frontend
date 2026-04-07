@@ -34,6 +34,16 @@ export interface MedicalRecordResponse {
   record: MedicalRecord;
   vitals: MedicalVital[];
   medications: MedicalMedication[];
+  procedures: MedicalRecordProcedure[];
+}
+
+export interface MedicalRecordProcedure {
+  id: string;
+  medical_record_id: string;
+  procedure_catalog_id: string;
+  procedure_name?: string;
+  notes: string | null;
+  performed_at: string;
 }
 
 export interface CreateMedicalVitalRequest {
@@ -64,4 +74,9 @@ export interface UpdateMedicalRecordRequest {
   notes?: string;
   vitals: CreateMedicalVitalRequest[];
   medications: CreateMedicalMedicationRequest[];
+}
+
+export interface AddProcedureReq {
+  procedure_catalog_id: string;
+  notes?: string | null;
 }

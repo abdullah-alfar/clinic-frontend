@@ -27,6 +27,8 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - **Advanced Doctor Availability**
 - **Smart Scheduling & Recommendations**
 - **Recurring Appointments**
+- **Inventory Management**
+- **Procedure Catalog (Stock Integration)**
 - **Doctor Dashboard**
 - **Operational Intelligence (AI-Driven)**
 
@@ -197,6 +199,7 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - **Structured Clinical Data**: Detailed tracking of diagnoses, clinical notes, and specific arrays of Vitals and Medications.
 - **Enrichment**: Link records to specific appointments and doctors for complete record keeping.
 - **Historical Timeline**: View past medical records chronologically integrated with the overall Patient Timeline alongside visits and appointments.
+- **Linked Procedures**: Record medical procedures performed during a visit, which automatically triggers linked inventory stock deductions.
 - **Flexible Management**: Support for creating and partially updating comprehensive clinical histories.
 
 #### Related API:
@@ -245,6 +248,49 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 
 #### Frontend:
 - `Reports` tab (Patient detail)
+
+---
+
+### 📦 Inventory Management
+
+#### Features:
+- **Stock Tracking**: Real-time monitoring of clinical supplies and consumables levels.
+- **Low Stock Alerts**: Visual indicators (badges) to highlight items below critical thresholds.
+- **Stock Adjustments**: Manual adjustment engine for restocks or wastage, with full movement history.
+- **Categorization**: Group items by category (PPE, Lab, Surgical) and SKU for enterprise organization.
+
+#### Related API:
+- `GET /api/v1/inventory/items`
+- `POST /api/v1/inventory/items`
+- `PATCH /api/v1/inventory/items/{id}`
+- `POST /api/v1/inventory/items/{id}/adjust`
+- `GET /api/v1/inventory/items/{id}/movements`
+
+#### Frontend:
+- `/inventory` (Main management page)
+- `useInventoryItems`, `useAdjustStock` hooks
+
+---
+
+### 🧬 Procedure Catalog
+
+#### Features:
+- **Procedure Blueprinting**: Define standard clinic procedures with fixed durations and base pricing.
+- **Inventory Linkage**: Map specific inventory items and quantities consumed by a procedure.
+- **Transactional Consistency**: Atomic backend engine that deducts stock precisely when a procedure is added to a visit.
+- **Doctor Workflow Integration**: Quick-select procedure picker accessible directly within the medical record editor.
+
+#### Related API:
+- `GET /api/v1/procedures`
+- `POST /api/v1/procedures`
+- `PATCH /api/v1/procedures/{id}`
+- `POST /api/v1/medical-records/{id}/procedures`
+
+#### Frontend:
+- `/procedures` (Blueprint management)
+- `AddProcedureDialog` (Visit integration)
+- `useProcedures` hook
+
 
 ---
 
