@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api';
+import { apiClient } from '@/lib/api/client';
 import { TimelineResponseDTO } from '../types';
 
 export const fetchPatientTimeline = async (
@@ -6,12 +6,14 @@ export const fetchPatientTimeline = async (
   type?: string,
   limit?: number
 ): Promise<{ data: TimelineResponseDTO; message: string }> => {
-  const url = new URL(`/api/v1/patients/${patientId}/timeline`, window.location.origin);
-  if (type) url.searchParams.append('type', type);
-  if (limit) url.searchParams.append('limit', limit.toString());
-
   const response = await apiClient.get<{ data: TimelineResponseDTO; message: string }>(
-    url.pathname + url.search
+    `/patients/${patientId}/timeline`,
+    {
+      params: {
+        type,
+        limit,
+      },
+    }
   );
   return response.data;
 };

@@ -65,6 +65,11 @@ export interface Appointment {
   updated_at: string;
 }
 
+export interface AppointmentDetailDTO extends Appointment {
+  patient_name: string;
+  doctor_name: string;
+}
+
 export type NotificationStatus = 'pending' | 'sent' | 'read';
 
 export interface Notification {
