@@ -2,10 +2,10 @@
 
 import { use } from 'react';
 import { usePatientProfile } from '@/features/patient-profile/hooks/usePatientProfile';
-import { PatientProfileHeader } from '@/features/patient-profile/components/PatientProfileHeader';
+import { PatientHeader } from '@/features/patient-profile/components/PatientHeader';
 import { PatientProfileTabs } from '@/features/patient-profile/components/PatientProfileTabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { UserCircle, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
@@ -63,15 +63,23 @@ export default function PatientDetailPage(props: { params: Promise<{ id: string 
     );
   }
 
-  const { patient, summary, flags, recent_activity } = data.data;
+  const { patient, flags } = data.data;
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Registry Title Header */}
-      <PatientProfileHeader patient={patient} flags={flags} />
+    <div className="min-h-screen bg-muted/20 -m-4 md:-m-6 lg:-m-8">
+      {/* 
+        Container-Presenter Pattern: 
+        This Page serves as the Data Fetcher (Smart Component) 
+        and delegates all UI rendering to standardized Presenters.
+      */}
+      <div className="bg-background shadow-sm border-b mb-8">
+        <PatientHeader patient={patient} flags={flags} />
+      </div>
 
-      {/* Workspace Tabs & Content */}
-      <PatientProfileTabs patient={patient} activities={recent_activity} />
+      <div className="max-w-7xl mx-auto">
+        <PatientProfileTabs patient={patient} />
+      </div>
     </div>
   );
 }
+

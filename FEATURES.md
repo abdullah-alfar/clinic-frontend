@@ -72,19 +72,28 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 ### 👥 Patient Management
 
 #### Features:
-- **Patient CRUD**: Complete lifecycle management of patient profiles.
-- **Patient Overview**: Compact summary header with persistent vital info in detail view.
-- **Tabbed Interface**: Organized view including Overview, Appointments, Billing, Reports, and Notes.
-- **Patient Timeline**: Visual history of all medical interactions, visits, and appointments.
+- **Patient CRUD**: Complete lifecycle management of patient profiles with multi-tenant isolation.
+- **Enterprise-Standard Header**: Bold identification with persistent meta-info subheaders (Phone | Email | Age) and segmented quick actions.
+- **Categorized Quick Actions**: Logical grouping of high-frequency tasks (Booking, Notes, Invoices) and secondary administrative actions (Export, Print, Archive).
+- **Minimalist Tab Navigation**: Underlined enterprise indicators for localized workspaces: Overview, Clinical, Financial, Documents, and Engagement.
+- **Unified Activity Stream**: High-performance medical timeline with **Infinite Scroll** (Aggregated UNION ALL from Appointments, Medical Records, Invoices, and WhatsApp).
+- **Row Factory Pattern**: Specialized UI rendering for different history events (Invoices vs Clinical Notes) within the same stream.
+- **Smart-Dumb Architecture**: Strict separation of data-fetching containers from presentational components for maximum responsiveness.
 
 #### Related API:
 - `GET /api/v1/patients`
 - `POST /api/v1/patients`
 - `GET /api/v1/patients/{id}`
+- `GET /api/v1/patients/{id}/profile` (Thinner core profile)
+- `GET /api/v1/patients/{id}/activities` (Paginated stream)
 
 #### Frontend:
-- `/patients`
-- `/patients/[id]` (Tabbed view)
+- `/patients/[id]` (Standardized Detail View)
+- `PatientHeader` (Enterprise Compound Component)
+- `PatientRecentActivity` (Infinite scroll stream with Factory Row)
+- `useIntersectionObserver` (Scroll triggering hook)
+- `useInfiniteQuery` (State management for history)
+
 
 ---
 
