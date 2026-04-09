@@ -41,7 +41,6 @@ export const SubmitRatingDialog: React.FC<SubmitRatingDialogProps> = ({
     await submitMutation.mutateAsync({
       rating,
       comment,
-      doctor_id: doctorId,
     });
 
     onOpenChange(false);

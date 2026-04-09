@@ -70,14 +70,14 @@ export function AISearchBar() {
               {results.map((group, idx) => (
                 <div key={idx} className="mb-2 last:mb-0">
                   <div className="px-4 py-1.5 bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
-                    {group.Label}
-                    <span className="bg-background px-2 py-0.5 rounded-full text-[10px]">{group.Count}</span>
+                    {group.label}
+                    <span className="bg-background px-2 py-0.5 rounded-full text-[10px]">{group.count}</span>
                   </div>
                   <div className="px-2">
-                    {group.Results?.map((res: any, rIdx: number) => (
-                      <div key={rIdx} className="p-2 hover:bg-muted/50 rounded-lg cursor-pointer transition-colors flex flex-col gap-1">
-                        <span className="text-sm font-medium text-foreground">{res.Title}</span>
-                        <span className="text-xs text-muted-foreground line-clamp-1">{res.Subtitle}</span>
+                    {group.results?.map((res: any, rIdx: number) => (
+                      <div key={rIdx} className="p-2 hover:bg-muted/50 rounded-lg cursor-pointer transition-colors flex flex-col gap-1" onClick={() => window.location.href = res.url}>
+                        <span className="text-sm font-medium text-foreground">{res.title}</span>
+                        <span className="text-xs text-muted-foreground line-clamp-1">{res.subtitle}</span>
                       </div>
                     ))}
                   </div>

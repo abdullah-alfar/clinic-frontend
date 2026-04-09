@@ -19,7 +19,7 @@ const IconMap: Record<string, any> = {
   notifications: Bell,
   memory: Brain,
   audit_logs: Activity,
-  doctor_availability: Clock,
+  doctor_schedules: Clock,
 };
 
 export function GlobalSearch() {
@@ -75,9 +75,10 @@ export function GlobalSearch() {
     }
   };
 
+  const isDebouncing = query !== debouncedQuery;
   const showResults = open && query.length > 0;
   const groups = data?.groups || [];
-  const hasResults = groups.some(g => g.results.length > 0);
+  const hasResults = groups.some(g => g.results && g.results.length > 0);
 
   return (
     <div className="relative w-full max-w-md" ref={containerRef}>
@@ -113,14 +114,21 @@ export function GlobalSearch() {
       {showResults && (
         <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[500px] animate-in fade-in zoom-in-95 duration-200">
           <div className="overflow-y-auto p-2 space-y-4">
-            {isLoading && !data && (
+            {(isLoading || isDebouncing) && !data && (
               <div className="flex items-center justify-center p-8 text-sm text-muted-foreground">
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Searching across modules...
               </div>
             )}
+
+            {isDebouncing && data && (
+              <div className="px-4 py-2 bg-primary/5 text-[10px] font-bold uppercase tracking-tighter text-primary/60 border-b border-primary/10 flex items-center gap-2">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Updating results...
+              </div>
+            )}
             
-            {!isLoading && !isError && debouncedQuery.length > 0 && !hasResults && (
+            {!isLoading && !isDebouncing && !isError && debouncedQuery.length > 0 && !hasResults && (
               <div className="p-8 text-center text-sm text-muted-foreground italic">
                 No results found for &quot;{debouncedQuery}&quot;
               </div>

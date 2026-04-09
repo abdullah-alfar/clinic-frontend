@@ -7,5 +7,6 @@ export function useGlobalSearch(query: string, types?: string[]) {
     queryFn: () => searchGlobal(query, types),
     enabled: query.trim().length > 0,
     staleTime: 60 * 1000,
+    placeholderData: (previousData) => previousData,
   });
 }

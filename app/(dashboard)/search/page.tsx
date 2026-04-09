@@ -31,7 +31,7 @@ const IconMap: Record<string, any> = {
   notifications: Bell,
   memory: Brain,
   audit_logs: Activity,
-  doctor_availability: Clock,
+  doctor_schedules: Clock,
 };
 
 export default function SearchPage() {

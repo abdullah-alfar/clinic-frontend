@@ -20,7 +20,7 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 - **Interactive Calendar**
 - **Medical Records (Visits)**
 - **Billing & Invoices**
-- **Attachment Management**
+- **Patient Documents (Advanced)**
 - **AI Report Analysis**
 - **Notification & Messaging Platform**
 - **WhatsApp Bot (Self-Service)**
@@ -234,20 +234,28 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 
 ---
 
-### 📂 Attachment Management
+### 📂 Patient Documents (Advanced)
 
 #### Features:
-- **High-capacity Uploads**: Support for files up to 50MB (PDFs, Images, Medical Reports).
-- **Secure Storage**: Storage abstraction for patient-sensitive documents.
-- **File Metadata**: Tracking of upload date, user, size, and mime type.
+- **Categorized Document Storage**: Organized clinical documents by category (Lab Reports, Prescriptions, ID Documents, Insurance, Consent Forms).
+- **Multi-format Previewer**: Integrated high-density viewer for PDF and Image-based reports directly in the workspace.
+- **Smart Filtering**: Real-time search and category-based filtering for rapid document retrieval.
+- **Appointment & Record Linkage**: Metadata-rich documents linked to specific encounters or medical records.
+- **Vertical-Slice Isolation**: Strict tenant-aware and patient-aware logic ensuring medical data privacy.
+- **High-capacity Uploads**: Support for large files (up to 50MB) with automatic MIME-type identification.
 
 #### Related API:
-- `POST /api/v1/patients/{id}/attachments`
-- `GET /api/v1/attachments/{id}`
-- `DELETE /api/v1/attachments/{id}`
+- `GET /api/v1/patients/{id}/documents`
+- `POST /api/v1/patients/{id}/documents`
+- `PATCH /api/v1/documents/{id}` (Rename/Recategorize)
+- `DELETE /api/v1/documents/{id}`
+- `GET /api/v1/documents/{id}/download`
 
 #### Frontend:
-- `Reports` tab (Patient detail)
+- `PatientDocumentsTab`: Professional cockpit-style document hub.
+- `DocumentPreviewDialog`: Multi-format viewer with fallback states.
+- `usePatientDocuments`: Real-time synchronization hook.
+- `Unified Timeline`: Seamless integration where every new document appears in the "Medical Timeline".
 
 ---
 

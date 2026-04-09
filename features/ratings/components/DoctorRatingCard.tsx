@@ -60,7 +60,7 @@ export const DoctorRatingCard: React.FC<DoctorRatingCardProps> = ({ doctorId }) 
 
           <div className="flex flex-col items-center justify-center space-y-2 p-4 bg-muted/40 rounded-2xl border border-muted-foreground/10">
             <MessageSquare className="w-6 h-6 text-green-500" />
-            <span className="text-2xl font-bold">{data.ratings.filter(r => r.comment).length}</span>
+            <span className="text-2xl font-bold">{data.recent_comments.length}</span>
             <span className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">
               With Comments
             </span>
@@ -73,21 +73,24 @@ export const DoctorRatingCard: React.FC<DoctorRatingCardProps> = ({ doctorId }) 
             Recent Feedback
           </h4>
           <div className="space-y-3">
-            {data.ratings.length === 0 ? (
+            {data.recent_comments.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8 bg-muted/20 rounded-xl border border-dashed">
                 No ratings yet for this doctor.
               </p>
             ) : (
-              data.ratings.map((rating) => (
+              data.recent_comments.map((rating, idx) => (
                 <div
-                  key={rating.id}
+                  key={idx}
                   className="p-4 rounded-xl bg-background border border-muted shadow-sm hover:shadow-md transition-all duration-300 group"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <StarRating rating={rating.rating} readonly size="sm" />
-                    <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                      {new Date(rating.created_at).toLocaleDateString()}
-                    </span>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[10px] font-bold text-primary uppercase">{rating.patient_name}</span>
+                      <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full mt-1">
+                        {new Date(rating.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                   {rating.comment && (
                     <p className="text-sm text-foreground/80 leading-relaxed italic group-hover:text-foreground transition-colors">

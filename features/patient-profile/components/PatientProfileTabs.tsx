@@ -16,8 +16,7 @@ import {
 import { PatientDTO } from '../types';
 import { MedicalRecordList } from '@/features/medical/components/MedicalRecordList';
 import { PatientInvoices } from '@/components/invoices/PatientInvoices';
-import { AttachmentList } from '@/features/attachments/components/AttachmentList';
-import { AttachmentUploader } from '@/features/attachments/components/AttachmentUploader';
+import { PatientDocumentsTab } from '@/features/documents/components/PatientDocumentsTab';
 import { WhatsAppReadinessCard } from '@/features/whatsappbot/components/WhatsAppReadinessCard';
 import { WhatsAppHistoryList } from '@/features/whatsappbot/components/WhatsAppHistoryList';
 import { NotificationHistoryList } from '@/features/notifications/components/NotificationHistoryList';
@@ -117,13 +116,7 @@ export function PatientProfileTabs({ patient }: PatientProfileTabsProps) {
 
           {/* Documents Tab */}
           <TabsContent value="files" className="focus-visible:outline-none m-0">
-            <SectionCard
-              title="Patient Documents"
-              icon={FileText}
-              action={<AttachmentUploader patientId={patient.id} />}
-            >
-              <AttachmentList patientId={patient.id} />
-            </SectionCard>
+            <PatientDocumentsTab patientId={patient.id} />
           </TabsContent>
 
           {/* Communications Tab */}

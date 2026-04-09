@@ -9,5 +9,5 @@ export async function searchGlobal(query: string, types?: string[]): Promise<Sea
   }
 
   const response = await apiClient.get(`/search?${params.toString()}`);
-  return response.data.data;
+  return response.data?.data;
 }
