@@ -366,37 +366,126 @@ A multi-tenant, secure, and modern Clinic Management System (SaaS) designed to s
 
 ---
 
-### 🔍 Unified Global Search Platform
+### 🔍 Concurrent Global Search Platform
+
+#### Architecture: Provider-Based Concurrent Search
+The search system uses a clean **provider-based architecture** with **Go concurrency** to search multiple modules simultaneously, delivering fast grouped results.
+
+```
+GET /api/v1/search?q=...
+        │
+        ▼
+  SearchHandler (parse + validate ≥ 2 chars)
+        │
+        ▼
+  SearchService.GlobalSearch(ctx, SearchRequest)
+        │
+        ├── PatientProvider   ──┐
+        ├── DoctorProvider    ──┤
+        ├── AppointmentProvider┤  (all goroutines run concurrently)
+        ├── InvoiceProvider   ──┤  (per-provider 4 s timeout)
+        ├── VisitNoteProvider ──┤  (partial failure → warning, not abort)
+        ├── AttachmentProvider┤
+        ├── MemoryProvider    ──┤
+        ├── NotificationProvider
+        └── AuditProvider     ──┘
+                │
+                ▼
+         RankResults (per group) → priority-sorted groups
+                │
+                ▼
+         SearchData { groups, warnings }
+```
 
 #### Features:
-- **Universal Discovery**: One-stop search across Patients, Doctors, Appointments, Billing, Reports, Medical Notes, Notifications, AI Memory, and Audit Logs.
-- **Command-Center UI**: Instant keyboard access (`Cmd+K`) from any screen with a grouped, categorized results dropdown.
-- **Dedicated Search Engine Page**: Full-screen results view at `/search` for deep exploration of matches across the entire clinic ecosystem.
-- **Intelligent Ranking**: Proprietary scoring algorithm that weights exact matches, title prefixes, and relevant metadata to ensure the most useful results appear first.
-- **Tenant-Safe Architecture**: Strict data partitioning ensures a clinic only ever sees its own records, enforced at the provider level.
-- **Scalable Provider Pattern**: Plugin-based backend architecture allows new system modules to register for search in minutes without modifying core logic.
+- **Concurrent Multi-Module Search**: All providers run in parallel goroutines — total latency equals the *slowest* provider, not the sum.
+- **Channel-Based Safety**: Uses a buffered result channel (not shared mutex) for zero data-race result collection.
+- **Context Propagation**: Each provider goroutine gets a derived `context.WithTimeout` (4 s), respecting the global 8 s request deadline.
+- **Partial-Failure Resilience**: A single provider failure produces a `warnings` entry — healthy providers still return results.
+- **Intelligent Ranking**: Additive scoring: exact title match (+10), prefix (+5), substring (+2), exact subtitle/phone/email (+8), recency bonus (+1 within 30 days).
+- **Priority-Ordered Groups**: Results are grouped by entity type in a canonical priority order (Patients → Doctors → Appointments → Invoices → Notes → Reports → Memory → Notifications → Schedules → Audit).
+- **Rich Query Filters**: Supports `types`, `limit`, `date_from`, `date_to`, `status`, `patient_id`, `doctor_id` query parameters.
+- **Minimum Query Guard**: Queries shorter than 2 characters return a 400 immediately — no DB work done.
+- **Tenant-Safe**: Every provider enforces `tenant_id` isolation at the SQL level.
+- **Extensible**: New providers implement a single `SearchProvider` interface and are registered at startup — zero changes to core logic.
 
 #### Searchable Content:
-- **Patients**: First name, last name, phone, email.
+- **Patients**: First name, last name, full name, phone, email.
 - **Doctors**: Full name, specialty, license number.
-- **Appointments**: Patient name, doctor name, status, reason, notes.
-- **Billing**: Invoice status, amount,
+- **Appointments**: Patient name, doctor name, status, reason, notes. Filterable by status, date range, doctor, patient.
+- **Invoices (Billing)**: Patient name, status, amount. Filterable by status, patient, date range.
+- **Medical Notes (Visits)**: Notes, diagnosis, prescription, patient name. Filterable by patient, doctor, date range.
+- **Reports & Attachments**: File name, MIME type, patient name. Filterable by patient, date range.
+- **AI Memory & Insights**: Analysis type, summary content, patient name. Filterable by patient, date range.
+- **Notifications**: Title, message, type, status. Filterable by status, date range.
+- **Doctor Schedules**: Doctor name, specialty. Filterable by doctor.
+- **Audit Logs**: Action, entity type, user name, metadata. Filterable by date range.
 
-### Patient Management
+#### API:
+```
+GET /api/v1/search
+  ?q=john                        # required, min 2 chars
+  &types=patients,doctors        # optional CSV filter
+  &limit=10                      # optional, default 20, max 50
+  &date_from=2025-01-01T00:00:00Z
+  &date_to=2025-12-31T23:59:59Z
+  &status=confirmed
+```
+
+#### Response Shape:
+```json
+{
+  "data": {
+    "query": "john",
+    "groups": [
+      {
+        "type": "patients",
+        "label": "Patients",
+        "count": 3,
+        "results": [
+          {
+            "id": "uuid",
+            "title": "John Doe",
+            "subtitle": "0791234567 • john@email.com",
+            "description": "Patient",
+            "url": "/patients/uuid",
+            "score": 15.0,
+            "metadata": {}
+          }
+        ]
+      }
+    ],
+    "warnings": []
+  },
+  "message": "success"
+}
+```
+
+#### Frontend:
+- `features/search/components/GlobalSearch` — Topbar dropdown with `⌘K` shortcut, warning banner for partial failures, 2-char minimum hint.
+- `app/(dashboard)/search/page.tsx` — Full-screen results page.
+- `features/search/hooks/useSearch` — TanStack Query hook; disabled for queries < 2 chars; exposes `warnings`.
+- `features/search/api/search.ts` — Typed API client with `SearchFilters` support.
+
+#### Scalability Extension Points (future):
+- PostgreSQL full-text search (`tsvector` / `tsquery`) can replace `ILIKE` per provider.
+- A `search_documents` pre-index table can power async indexing and vector search.
+- Semantic / AI ranking can plug into `RankResults` without changing provider contracts.
+- `ProviderRegistry.Register()` allows runtime dynamic provider injection.
+
+---
+
+### 👥 Patient Management
 - **Centralized Patient List**: Advanced search and filtering for patient records.
 - **Patient Profile 360°**: Complete 360-degree view of a patient, including:
   - Personal & Contact Information
   - Medical History & Clinical Notes
   - Appointment Timeline (Past & Upcoming)
-  - billing & Invoice status
+  - Billing & Invoice status
   - Document & Report management with AI analysis
   - Communication History (WhatsApp & Notifications)
   - Quick Actions for streamlined workflows
 - **Medical Records**: Structured storage of diagnoses, vitals, and prescriptions.
-, clinical notes.
-- **AI Memory**: Summaries of medical insights and automated report analyses.
-- **Notifications**: Title, message content, type, status.
-- **Audit Logs**: Actions, entity types, per-user activity history.
 
 #### Related API:
 - `GET /api/v1/search?q={query}&types={optional_csv}`

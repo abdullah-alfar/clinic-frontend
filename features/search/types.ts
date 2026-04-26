@@ -18,4 +18,6 @@ export interface SearchResultGroup {
 export interface SearchData {
   query: string;
   groups: SearchResultGroup[];
+  /** Provider-level warnings surfaced when one or more search providers fail partially. */
+  warnings: string[];
 }

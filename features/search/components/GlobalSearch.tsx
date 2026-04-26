@@ -1,6 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Loader2, Command, FileText, User, Users, Calendar, CreditCard, Bell, Activity, Brain, Clock } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  Command,
+  FileText,
+  User,
+  Users,
+  Calendar,
+  CreditCard,
+  Bell,
+  Activity,
+  Brain,
+  Clock,
+  AlertTriangle,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -9,7 +23,8 @@ import { SearchResultItem, SearchResultGroup } from "../types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
-const IconMap: Record<string, any> = {
+/** Maps each EntityType to a Lucide icon. */
+const IconMap: Record<string, React.ElementType> = {
   patients: Users,
   doctors: User,
   appointments: Calendar,
@@ -32,6 +47,7 @@ export function GlobalSearch() {
 
   const { data, isLoading, isError } = useGlobalSearch(debouncedQuery);
 
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -39,24 +55,22 @@ export function GlobalSearch() {
         inputRef.current?.focus();
         setOpen(true);
       }
-      
       if (e.key === "Escape") {
         setOpen(false);
         inputRef.current?.blur();
       }
     };
-
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Click-outside to close
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
-    
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -67,9 +81,9 @@ export function GlobalSearch() {
     router.push(item.url);
   };
 
-  const handleFullSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim()) {
+  const handleFullSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (query.trim().length >= 2) {
       setOpen(false);
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
     }
@@ -77,16 +91,19 @@ export function GlobalSearch() {
 
   const isDebouncing = query !== debouncedQuery;
   const showResults = open && query.length > 0;
-  const groups = data?.groups || [];
-  const hasResults = groups.some(g => g.results && g.results.length > 0);
+  const groups = data?.groups ?? [];
+  const warnings = data?.warnings ?? [];
+  const hasResults = groups.some((g) => g.results && g.results.length > 0);
 
   return (
     <div className="relative w-full max-w-md" ref={containerRef}>
       <form onSubmit={handleFullSearch} className="relative group">
-        <Search className={cn(
-          "absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors",
-          open ? "text-primary" : "text-muted-foreground"
-        )} />
+        <Search
+          className={cn(
+            "absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors",
+            open ? "text-primary" : "text-muted-foreground"
+          )}
+        />
         <Input
           ref={inputRef}
           type="text"
@@ -114,6 +131,8 @@ export function GlobalSearch() {
       {showResults && (
         <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[500px] animate-in fade-in zoom-in-95 duration-200">
           <div className="overflow-y-auto p-2 space-y-4">
+
+            {/* Initial loading skeleton */}
             {(isLoading || isDebouncing) && !data && (
               <div className="flex items-center justify-center p-8 text-sm text-muted-foreground">
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -121,64 +140,89 @@ export function GlobalSearch() {
               </div>
             )}
 
+            {/* Stale-data refresh indicator */}
             {isDebouncing && data && (
               <div className="px-4 py-2 bg-primary/5 text-[10px] font-bold uppercase tracking-tighter text-primary/60 border-b border-primary/10 flex items-center gap-2">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 Updating results...
               </div>
             )}
-            
-            {!isLoading && !isDebouncing && !isError && debouncedQuery.length > 0 && !hasResults && (
+
+            {/* Partial failure warning banner */}
+            {!isLoading && !isDebouncing && warnings.length > 0 && (
+              <div className="mx-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-2">
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                  Some search modules returned partial results.
+                </p>
+              </div>
+            )}
+
+            {/* No results state */}
+            {!isLoading && !isDebouncing && !isError && debouncedQuery.length >= 2 && !hasResults && (
               <div className="p-8 text-center text-sm text-muted-foreground italic">
                 No results found for &quot;{debouncedQuery}&quot;
               </div>
             )}
 
+            {/* Min-length hint */}
+            {!isLoading && debouncedQuery.length > 0 && debouncedQuery.length < 2 && (
+              <div className="p-4 text-center text-xs text-muted-foreground">
+                Type at least 2 characters to search
+              </div>
+            )}
+
+            {/* Error state */}
             {isError && (
               <div className="p-8 text-center text-sm text-destructive">
                 An error occurred while searching.
               </div>
             )}
 
-            {!isLoading && groups.map((group: SearchResultGroup) => (
-              <div key={group.type} className="space-y-1">
-                <div className="px-3 py-1 flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    {group.label}
-                  </span>
-                  <Badge variant="outline" className="text-[10px] h-4 px-1 opacity-50">
-                    {group.count}
-                  </Badge>
+            {/* Result groups */}
+            {!isLoading &&
+              groups.map((group: SearchResultGroup) => (
+                <div key={group.type} className="space-y-1">
+                  <div className="px-3 py-1 flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {group.label}
+                    </span>
+                    <Badge variant="outline" className="text-[10px] h-4 px-1 opacity-50">
+                      {group.count}
+                    </Badge>
+                  </div>
+                  <div className="grid gap-1">
+                    {group.results.map((item) => {
+                      const Icon = IconMap[group.type] ?? Command;
+                      return (
+                        <button
+                          key={item.id}
+                          className="w-full text-left flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-accent hover:text-accent-foreground group/item transition-all"
+                          onClick={() => handleSelect(item)}
+                        >
+                          <div className="mt-1 h-8 w-8 rounded-lg bg-muted flex items-center justify-center group-hover/item:bg-background transition-colors shrink-0">
+                            <Icon className="h-4 w-4 text-muted-foreground group-hover/item:text-primary transition-colors" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-bold truncate">{item.title}</div>
+                            <div className="text-xs text-muted-foreground truncate opacity-70">
+                              {item.subtitle}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="grid gap-1">
-                  {group.results.map((item) => {
-                    const Icon = IconMap[group.type] || Command;
-                    return (
-                      <button
-                        key={item.id}
-                        className="w-full text-left flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-accent hover:text-accent-foreground group/item transition-all"
-                        onClick={() => handleSelect(item)}
-                      >
-                        <div className="mt-1 h-8 w-8 rounded-lg bg-muted flex items-center justify-center group-hover/item:bg-background transition-colors shrink-0">
-                          <Icon className="h-4 w-4 text-muted-foreground group-hover/item:text-primary transition-colors" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-bold truncate">{item.title}</div>
-                          <div className="text-xs text-muted-foreground truncate opacity-70">{item.subtitle}</div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
 
+          {/* View-all footer */}
           {!isLoading && hasResults && (
             <div className="p-2 border-t border-border/50 bg-muted/20">
-              <button 
+              <button
                 className="w-full py-2 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/5 rounded-lg transition-colors"
-                onClick={handleFullSearch}
+                onClick={() => handleFullSearch()}
               >
                 View all results for &quot;{query}&quot;
               </button>
